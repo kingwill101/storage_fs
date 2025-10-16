@@ -54,10 +54,18 @@ class MinioConfig {
 
   /// Convert to a minimal disk config map understood by the Storage package.
   Map<String, dynamic> toStorageConfig() {
+    // Parse endpoint into host and port
+    final endpointParts = endpoint.split(':');
+    final host = endpointParts[0];
+    final port = endpointParts.length > 1
+        ? endpointParts[1]
+        : (useSsl ? '443' : '9000');
+
     return {
       'driver': 's3',
       'options': {
-        'endpoint': endpoint,
+        'endpoint': host,
+        'port': port,
         'key': accessKey,
         'secret': secretKey,
         'bucket': bucket,

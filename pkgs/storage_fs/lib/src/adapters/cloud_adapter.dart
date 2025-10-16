@@ -72,8 +72,17 @@ class CloudAdapter implements contracts.Cloud {
       );
     }
 
+    // Handle endpoint - can be either combined "host:port" or separate fields
+    var endpoint = options['endpoint'] as String;
+    final portOption = options['port'];
+    
+    // If port is provided separately, append it to endpoint
+    if (portOption != null && !endpoint.contains(':')) {
+      endpoint = '$endpoint:$portOption';
+    }
+
     final fs = CloudFileSystemFactory.minio(
-      endpoint: options['endpoint'] as String,
+      endpoint: endpoint,
       accessKey: options['key'] as String,
       secretKey: options['secret'] as String,
       bucket: options['bucket'] as String,

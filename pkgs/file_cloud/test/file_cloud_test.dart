@@ -19,13 +19,17 @@ void main() {
 
       setUpAll(() async {
         final env = MinioConfig.fromEnvironment();
+
+        // Parse endpoint and port
+        final endpointParts = env.endpoint.split(':');
+        final host = endpointParts[0];
+        final port = endpointParts.length > 1
+            ? int.parse(endpointParts[1])
+            : (env.useSsl ? 443 : 9000);
+
         final minio = Minio(
-          endPoint: env.endpoint,
-          port: env.useSsl
-              ? 443
-              : (env.endpoint.contains(':')
-                    ? int.parse(env.endpoint.split(':')[1])
-                    : 9000),
+          endPoint: host,
+          port: port,
           accessKey: env.accessKey,
           secretKey: env.secretKey,
           useSSL: env.useSsl,
@@ -176,13 +180,16 @@ void main() {
             (Platform.environment['MINIO_USE_SSL'] ?? 'false').toLowerCase() ==
             'true';
 
+        // Parse endpoint and port
+        final endpointParts = endpoint.split(':');
+        final host = endpointParts[0];
+        final port = endpointParts.length > 1
+            ? int.parse(endpointParts[1])
+            : (useSsl ? 443 : 9000);
+
         final minio = Minio(
-          endPoint: endpoint,
-          port: useSsl
-              ? 443
-              : (endpoint.contains(':')
-                    ? int.parse(endpoint.split(':')[1])
-                    : 9000),
+          endPoint: host,
+          port: port,
           accessKey: accessKey,
           secretKey: secretKey,
           useSSL: useSsl,

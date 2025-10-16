@@ -12,12 +12,15 @@ class CloudFileSystemFactory {
     bool useSSL = false,
     String region = 'us-east-1',
   }) {
-    final port = useSSL
-        ? 443
-        : (endpoint.contains(':') ? int.parse(endpoint.split(':')[1]) : 9000);
+    // Parse endpoint and port
+    final endpointParts = endpoint.split(':');
+    final host = endpointParts[0];
+    final port = endpointParts.length > 1
+        ? int.parse(endpointParts[1])
+        : (useSSL ? 443 : 9000);
 
     final minio = Minio(
-      endPoint: endpoint,
+      endPoint: host,
       port: port,
       accessKey: accessKey,
       secretKey: secretKey,
