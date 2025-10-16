@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:file/file.dart';
 import 'package:file_cloud/src/cloud_driver.dart';
 import 'package:minio/minio.dart';
+export 'package:minio/minio.dart';
+
 
 /// Cloud storage driver implementation for MinIO and S3-compatible services.
 ///

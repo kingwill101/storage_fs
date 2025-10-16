@@ -1,10 +1,23 @@
 name: file_cloud
-description: A starting point for Dart libraries or applications.
+description: A cloud filesystem abstraction layer for Dart, providing unified access to cloud storage providers like MinIO and S3-compatible services.
 version: 0.1.0
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/kingwill101/storage_fs/tree/master/pkgs/file_cloud
 resolution: workspace
+
+topics:
+  - cloud-storage
+  - filesystem
+  - minio
+  - s3-compatible
+
+homepage: https://github.com/kingwill101/storage_fs/tree/master/pkgs/file_cloud
+
+issue_tracker: https://github.com/kingwill101/storage_fs/issues
+
+funding:
+  - https://www.buymeacoffee.com/kingwill101
 environment:
-  sdk: ">=3.9.2 <4.0.0"
+  sdk: ">=3.9.0<4.0.0"
 
 dependencies:
   file: ^7.0.1

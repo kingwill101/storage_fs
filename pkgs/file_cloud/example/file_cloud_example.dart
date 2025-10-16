@@ -1,6 +1,5 @@
 import 'package:file_cloud/file_cloud.dart';
 import 'package:file_cloud/drivers.dart';
-import 'package:minio/minio.dart';
 
 void main() async {
   // Create a Minio client

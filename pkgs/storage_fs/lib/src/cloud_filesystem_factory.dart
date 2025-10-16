@@ -1,4 +1,3 @@
-import 'package:minio/minio.dart';
 import 'package:file_cloud/file_cloud.dart';
 import 'package:file_cloud/drivers.dart';
 

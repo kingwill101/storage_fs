@@ -73,10 +73,11 @@ class CloudDirectory extends CloudFileSystemEntity implements Directory {
     if (recursive && parent is CloudDirectory) {
       final parentPath = parent.path;
       // Stop recursion at root or when parent is same as current
+      final rootPrefix = fileSystem.path.rootPrefix(parentPath);
       if (parentPath.isNotEmpty &&
           parentPath != '.' &&
           parentPath != path &&
-          parentPath != fileSystem.path.rootPrefix) {
+          parentPath != rootPrefix) {
         await (parent as CloudDirectory).create(recursive: true);
       }
     }
