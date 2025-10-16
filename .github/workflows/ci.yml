@@ -129,10 +129,11 @@ jobs:
       - name: Install workspace dependencies
         run: dart pub get
 
-      - name: Install AWS CLI
+      - name: Install MinIO Client
         run: |
-          sudo apt-get update
-          sudo apt-get install -y awscli
+          wget https://dl.min.io/client/mc/release/linux-amd64/mc
+          chmod +x mc
+          sudo mv mc /usr/local/bin/
 
       - name: Setup MinIO
         run: |
@@ -141,8 +142,9 @@ jobs:
             -e "MINIO_SECRET_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}" \
             -v /tmp/data:/data -v /tmp/config:/root/.minio minio/minio server /data
 
-          export AWS_EC2_METADATA_DISABLED=true
-          aws --endpoint-url http://127.0.0.1:9000/ s3 mb s3://${{ env.AWS_BUCKET }} || true
+          sleep 5
+          mc alias set minio http://127.0.0.1:9000 ${{ env.AWS_ACCESS_KEY_ID }} ${{ env.AWS_SECRET_ACCESS_KEY }}
+          mc mb minio/${{ env.AWS_BUCKET }} || true
 
       - name: Run cloud tests (storage_fs)
         run: cd pkgs/storage_fs && dart test -r expanded test/cloud_test.dart test/cloud_filesystem_test.dart test/storage_cloud_test.dart
@@ -180,10 +182,11 @@ jobs:
       - name: Install workspace dependencies
         run: dart pub get
 
-      - name: Install AWS CLI
+      - name: Install MinIO Client
         run: |
-          sudo apt-get update
-          sudo apt-get install -y awscli
+          wget https://dl.min.io/client/mc/release/linux-amd64/mc
+          chmod +x mc
+          sudo mv mc /usr/local/bin/
 
       - name: Setup MinIO
         run: |
@@ -192,8 +195,9 @@ jobs:
             -e "MINIO_SECRET_KEY=minioadmin" \
             -v /tmp/data:/data -v /tmp/config:/root/.minio minio/minio server /data
 
-          export AWS_EC2_METADATA_DISABLED=true
-          aws --endpoint-url http://127.0.0.1:9000/ s3 mb s3://test-bucket || true
+          sleep 5
+          mc alias set minio http://127.0.0.1:9000 minioadmin minioadmin
+          mc mb minio/test-bucket || true
 
       - name: Run cloud tests (file_cloud)
         run: cd pkgs/file_cloud && dart test -r expanded
