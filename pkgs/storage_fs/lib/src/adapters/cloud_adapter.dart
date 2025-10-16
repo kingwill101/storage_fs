@@ -75,7 +75,7 @@ class CloudAdapter implements contracts.Cloud {
     // Handle endpoint - can be either combined "host:port" or separate fields
     var endpoint = options['endpoint'] as String;
     final portOption = options['port'];
-    
+
     // If port is provided separately, append it to endpoint
     if (portOption != null && !endpoint.contains(':')) {
       endpoint = '$endpoint:$portOption';

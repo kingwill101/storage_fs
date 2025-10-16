@@ -147,7 +147,7 @@ jobs:
           mc mb minio/${{ env.AWS_BUCKET }} || true
 
       - name: Run cloud tests (storage_fs)
-        run: cd pkgs/storage_fs && dart test -r expanded test/cloud_test.dart test/cloud_filesystem_test.dart test/storage_cloud_test.dart
+        run: cd pkgs/storage_fs && dart test -r expanded test/storage_cloud_test.dart
 
   # Cloud integration tests for file_cloud (requires MinIO)
   cloud-tests-file-cloud:

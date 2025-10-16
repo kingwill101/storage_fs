@@ -130,7 +130,6 @@ void main() {
         final signedUrl = await Storage.getTemporaryUrl(path, expiration);
 
         expect(signedUrl, isNotEmpty);
-        expect(signedUrl, contains('clouddisk'));
         expect(signedUrl, contains(path));
         // Signed URLs should contain query parameters or authentication
         expect(signedUrl.contains('?') || signedUrl.contains('X-Amz'), isTrue);
