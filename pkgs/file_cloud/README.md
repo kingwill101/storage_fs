@@ -2,8 +2,10 @@
 
 A low-level cloud filesystem library for Dart that provides direct access to S3-compatible object storage services like AWS S3, MinIO, Cloudflare R2, and DigitalOcean Spaces. This package implements a cloud backend for the file package, enabling filesystem operations on cloud storage.
 
+[![pub package](https://img.shields.io/pub/v/file_cloud.svg)](https://pub.dev/packages/file_cloud)
 [![Dart](https://img.shields.io/badge/dart-%3E%3D3.0.0-blue.svg)](https://dart.dev/)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg)](https://www.buymeacoffee.com/kingwill101)
 
 ## Overview
 
@@ -427,6 +429,12 @@ Check the `example/` directory for complete examples:
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Support
+
+- 📖 [API Documentation](https://pub.dev/documentation/file_cloud/latest/)
+- 🐛 [Issue Tracker](https://github.com/kingwill101/storage_fs/issues)
+- 💬 [Discussions](https://github.com/kingwill101/storage_fs/discussions)
 
 ## License
 

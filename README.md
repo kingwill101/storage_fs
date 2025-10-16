@@ -2,7 +2,11 @@
 
 A comprehensive cloud storage solution for Dart, providing both low-level filesystem primitives and high-level storage abstractions for S3-compatible cloud services.
 
+[![pub package](https://img.shields.io/pub/v/storage_fs.svg?label=storage_fs)](https://pub.dev/packages/storage_fs)
+[![pub package](https://img.shields.io/pub/v/file_cloud.svg?label=file_cloud)](https://pub.dev/packages/file_cloud)
 [![Dart](https://img.shields.io/badge/dart-%3E%3D3.0.0-blue.svg)](https://dart.dev/)
+[![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg)](https://www.buymeacoffee.com/kingwill101)
 
 ## Overview
 

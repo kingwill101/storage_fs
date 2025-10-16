@@ -2,8 +2,10 @@
 
 A powerful and flexible filesystem abstraction library for Dart, inspired by Laravel's Storage facade. Provides a unified API for working with local filesystems and cloud storage services.
 
+[![pub package](https://img.shields.io/pub/v/storage_fs.svg)](https://pub.dev/packages/storage_fs)
 [![Dart](https://img.shields.io/badge/dart-%3E%3D3.0.0-blue.svg)](https://dart.dev/)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow.svg)](https://www.buymeacoffee.com/kingwill101)
 
 ## Features
 
@@ -25,46 +27,6 @@ Add this to your `pubspec.yaml`:
 dependencies:
   storage_fs: ^0.1.0
 ```
-
-Then run:
-
-```bash
-dart pub get
-```
-
-## MinIO (Local) Testing
-
-Run a local S3-compatible MinIO server for cloud tests:
-
-```bash
-# Start MinIO with Docker
-docker-compose up -d
-
-# Or use the helper script (creates .env and starts services)
-./setup-minio.sh
-```
-
-Set environment (or copy `.env.example` to `.env`):
-
-```bash
-cp .env.example .env
-# defaults:
-# MINIO_ENDPOINT=localhost:9000
-# MINIO_ACCESS_KEY=minioadmin
-# MINIO_SECRET_KEY=minioadmin
-# MINIO_BUCKET=test-bucket
-# MINIO_USE_SSL=false
-```
-
-Run cloud tests:
-
-```bash
-make test-cloud
-# or
-dart test test/cloud_test.dart
-```
-
-See MINIO_TESTING.md and QUICKSTART.md for a full walkthrough.
 
 ## Quick Start
 
@@ -365,47 +327,6 @@ await for (final chunk in outputStream!) {
 await file.close();
 ```
 
-## Testing
-
-The storage library provides built-in support for testing:
-
-```dart
-import 'package:storage_fs/storage_fs.dart';
-import 'package:test/test.dart';
-
-void main() {
-  test('file operations work correctly', () async {
-    // Create a fake disk for testing
-    Storage.fake();
-
-    // All operations now use the fake disk
-    await Storage.put('test.txt', 'test content');
-
-    // Make assertions
-    await Storage.assertExists('test.txt');
-    await Storage.assertExists('test.txt', content: 'test content');
-    await Storage.assertMissing('nonexistent.txt');
-
-    // Assert file count
-    await Storage.put('file1.txt', 'content');
-    await Storage.put('file2.txt', 'content');
-    await Storage.assertCount('.', 3); // test.txt, file1.txt, file2.txt
-
-    // Assert directory is empty
-    await Storage.makeDirectory('empty');
-    await Storage.assertDirectoryEmpty('empty');
-  });
-
-  test('persistent fake disk', () async {
-    // Use persistent fake to keep data between tests
-    Storage.persistentFake();
-
-    await Storage.put('persistent.txt', 'data');
-    // Data persists in temp directory
-  });
-}
-```
-
 ## Advanced Features
 
 ### Custom Temporary URL Builders
@@ -487,101 +408,10 @@ Works with any S3-compatible storage service:
 - Metadata support
 - Streaming uploads/downloads
 
-## API Reference
-
-### Storage Facade Methods
-
-#### Initialization
-- `Storage.initialize(config)` - Initialize with configuration
-- `Storage.disk([name])` - Get filesystem instance
-- `Storage.cloud()` - Get cloud filesystem instance
-
-#### File Operations
-- `Storage.get(path)` - Read file content
-- `Storage.put(path, contents)` - Write file content
-- `Storage.exists(path)` - Check if file exists
-- `Storage.missing(path)` - Check if file is missing
-- `Storage.delete(paths)` - Delete file(s)
-- `Storage.copy(from, to)` - Copy file
-- `Storage.move(from, to)` - Move/rename file
-
-#### File Metadata
-- `Storage.size(path)` - Get file size
-- `Storage.lastModified(path)` - Get last modified time
-- `Storage.mimeType(path)` - Get MIME type
-- `Storage.checksum(path)` - Get file checksum
-
-#### Directory Operations
-- `Storage.files(directory)` - List files
-- `Storage.allFiles(directory)` - List files recursively
-- `Storage.directories(directory)` - List directories
-- `Storage.allDirectories(directory)` - List directories recursively
-- `Storage.makeDirectory(path)` - Create directory
-- `Storage.deleteDirectory(path)` - Delete directory
-
-#### Cloud Storage
-- `Storage.url(path)` - Get public URL
-- `Storage.getTemporaryUrl(path, expiration)` - Get signed URL
-- `Storage.getTemporaryUploadUrl(path, expiration)` - Get upload URL
-- `Storage.providesTemporaryUrls()` - Check if supported
-- `Storage.getVisibility(path)` - Get visibility
-- `Storage.setVisibility(path, visibility)` - Set visibility
-
-#### Testing
-- `Storage.fake([disk, config])` - Create fake disk
-- `Storage.persistentFake([disk, config])` - Create persistent fake
-- `Storage.assertExists(path)` - Assert file exists
-- `Storage.assertMissing(path)` - Assert file missing
-- `Storage.assertCount(path, count)` - Assert file count
-- `Storage.assertDirectoryEmpty(path)` - Assert directory empty
-
 ## Examples
 
 Check the `example/` directory for complete examples:
 
-- `example.dart` - Basic usage examples
-- `s3_example.dart` - Cloud storage with S3
-- `comprehensive_example.dart` - Advanced features
-- `config_example.dart` - Configuration patterns
-
-## Testing
-
-Run all tests:
-
-```bash
-dart test
-```
-
-Run specific test suites:
-
-```bash
-# Local filesystem tests
-dart test test/storage_test.dart
-
-# Cloud storage tests
-dart test test/cloud_comprehensive_test.dart
-
-# Configuration tests
-dart test test/config_test.dart
-```
-
-## Performance Considerations
-
-- Use streaming operations for large files (`readStream`, `writeStream`)
-- Enable compression for cloud uploads when appropriate
-- Use signed URLs for direct client uploads to reduce server load
-- Consider using multiple disks for different types of content
-- Cache file metadata when making multiple checks
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ## License
 
@@ -595,19 +425,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Support
 
-- 📖 [API Documentation](https://pub.dev/documentation/storage/latest/)
-- 🐛 [Issue Tracker](https://github.com/yourusername/storage/issues)
-- 💬 [Discussions](https://github.com/yourusername/storage/discussions)
+- 📖 [API Documentation](https://pub.dev/documentation/storage_fs/latest/)
+- 🐛 [Issue Tracker](https://github.com/kingwill101/storage_fs/issues)
+- 💬 [Discussions](https://github.com/kingwill101/storage_fs/discussions)
 
-## Roadmap
 
-- [ ] Azure Blob Storage support
-- [ ] Google Cloud Storage support
-- [ ] FTP/SFTP support
-- [ ] Encryption at rest
-- [ ] File versioning
-- [ ] Webhook support for cloud events
-- [ ] CDN integration helpers
 
 ---
 
