@@ -1,4 +1,4 @@
-## 0.0.1 (2025-10-16)
+## 0.1.0 (2025-10-16)
 
 ### Features
 - **Cloud Filesystem Implementation**: Full `FileSystem` interface implementation for cloud storage
