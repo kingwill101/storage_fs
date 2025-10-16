@@ -33,6 +33,18 @@ class DiskConfig {
   /// Additional driver-specific options
   final Map<String, dynamic> options;
 
+  /// Creates a new disk configuration.
+  ///
+  /// The [driver] specifies the storage backend type (e.g., 'local', 's3').
+  /// The [root] is the base path for local disks.
+  /// The [url] is the public URL base for cloud disks.
+  /// The [visibility] sets the default file visibility ('public' or 'private').
+  /// The [throw_] determines whether to throw exceptions on errors.
+  /// The [report] enables error reporting.
+  /// The [directorySeparator] sets the path separator (default: '/').
+  /// The [prefix] sets a path prefix for scoped disks.
+  /// The [readOnly] makes the disk read-only when true.
+  /// The [options] contains driver-specific configuration.
   const DiskConfig({
     required this.driver,
     this.root,

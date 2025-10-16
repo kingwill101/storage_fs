@@ -2,6 +2,9 @@ import 'filesystem.dart';
 
 /// Contract for cloud filesystem operations.
 abstract class Cloud extends Filesystem {
+  /// Creates a new cloud filesystem instance.
+  Cloud();
+
   /// Get the URL for the file at the given path.
   String url(String path);
 

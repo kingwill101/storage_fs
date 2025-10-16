@@ -46,9 +46,15 @@ class CloudAdapter implements contracts.Cloud {
   )?
   _temporaryUploadUrlBuilder;
 
+  /// Creates a new cloud storage adapter.
+  ///
+  /// The [fileSystem] is the cloud filesystem backend implementation.
+  /// The [config] contains the disk configuration.
+  /// The optional [baseUrl] overrides the default base URL for public URLs.
   CloudAdapter({required this.fileSystem, required this.config, Uri? baseUrl})
     : _explicitBaseUrl = baseUrl;
 
+  /// Gets the underlying cloud storage driver.
   CloudStorageDriver get driver => fileSystem.driver;
 
   /// Create a CloudAdapter from configuration
