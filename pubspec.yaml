@@ -1,0 +1,8 @@
+name: _
+publish_to: none
+workspace:
+  - pkgs/file_cloud
+  - pkgs/storage_fs
+
+environment:
+  sdk: ">=3.9.2 <4.0.0"

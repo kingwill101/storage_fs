@@ -1,0 +1,199 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - "*"
+    tags:
+      - "v*.*.*"
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Test file_cloud package
+  test-file-cloud:
+    name: Test file_cloud package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Cache Pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-file-cloud-${{ hashFiles('pkgs/file_cloud/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-file-cloud-
+
+      - name: Install workspace dependencies
+        run: dart pub get
+
+      - name: Check formatting (file_cloud)
+        run: dart format --output=none --set-exit-if-changed pkgs/file_cloud
+
+      - name: Analyze (file_cloud)
+        run: dart analyze --fatal-infos --fatal-warnings pkgs/file_cloud
+
+      - name: Run tests (file_cloud - local only)
+        env:
+          ENABLE_CLOUD_TESTS: "0"
+        run: cd pkgs/file_cloud && dart test -r expanded
+
+  # Test storage_fs package
+  test-storage-fs:
+    name: Test storage_fs package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Cache Pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-storage-fs-${{ hashFiles('pkgs/storage_fs/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-storage-fs-
+
+      - name: Install workspace dependencies
+        run: dart pub get
+
+      - name: Check formatting (storage_fs)
+        run: dart format --output=none --set-exit-if-changed pkgs/storage_fs
+
+      - name: Analyze (storage_fs)
+        run: dart analyze --fatal-infos --fatal-warnings pkgs/storage_fs
+
+      - name: Run tests (storage_fs - local only)
+        env:
+          ENABLE_CLOUD_TESTS: "0"
+        run: cd pkgs/storage_fs && dart test -r expanded
+
+  # Cloud integration tests for storage_fs (requires MinIO)
+  cloud-tests-storage-fs:
+    name: Cloud Integration Tests (storage_fs with MinIO)
+    runs-on: ubuntu-latest
+    env:
+      ENABLE_CLOUD_TESTS: "1"
+      # AWS-style envs for MinIO setup
+      AWS_ACCESS_KEY_ID: minio
+      AWS_SECRET_ACCESS_KEY: minio123
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_BUCKET: test-bucket
+      # MINIO_* envs consumed by the Dart tests
+      MINIO_ENDPOINT: 127.0.0.1:9000
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+      MINIO_BUCKET: test-bucket
+      MINIO_REGION: us-east-1
+      MINIO_USE_SSL: "false"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Cache Pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-storage-fs-${{ hashFiles('pkgs/storage_fs/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-storage-fs-
+
+      - name: Install workspace dependencies
+        run: dart pub get
+
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      - name: Setup MinIO
+        run: |
+          docker run -d -p 9000:9000 --name minio  \
+            -e "MINIO_ACCESS_KEY=${{ env.AWS_ACCESS_KEY_ID }}" \
+            -e "MINIO_SECRET_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}" \
+            -v /tmp/data:/data -v /tmp/config:/root/.minio minio/minio server /data
+
+          export AWS_EC2_METADATA_DISABLED=true
+          aws --endpoint-url http://127.0.0.1:9000/ s3 mb s3://${{ env.AWS_BUCKET }} || true
+
+      - name: Run cloud tests (storage_fs)
+        run: cd pkgs/storage_fs && dart test -r expanded test/cloud_test.dart test/cloud_filesystem_test.dart test/storage_cloud_test.dart
+
+  # Cloud integration tests for file_cloud (requires MinIO)
+  cloud-tests-file-cloud:
+    name: Cloud Integration Tests (file_cloud with MinIO)
+    runs-on: ubuntu-latest
+    env:
+      ENABLE_CLOUD_TESTS: "1"
+      # MINIO_* envs consumed by the Dart tests
+      MINIO_ENDPOINT: 127.0.0.1:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: test-bucket
+      MINIO_REGION: us-east-1
+      MINIO_USE_SSL: "false"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Cache Pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-file-cloud-${{ hashFiles('pkgs/file_cloud/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-file-cloud-
+
+      - name: Install workspace dependencies
+        run: dart pub get
+
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      - name: Setup MinIO
+        run: |
+          docker run -d -p 9000:9000 --name minio  \
+            -e "MINIO_ACCESS_KEY=minioadmin" \
+            -e "MINIO_SECRET_KEY=minioadmin" \
+            -v /tmp/data:/data -v /tmp/config:/root/.minio minio/minio server /data
+
+          export AWS_EC2_METADATA_DISABLED=true
+          aws --endpoint-url http://127.0.0.1:9000/ s3 mb s3://test-bucket || true
+
+      - name: Run cloud tests (file_cloud)
+        run: cd pkgs/file_cloud && dart test -r expanded
