@@ -1,0 +1,42 @@
+name: file_sftp CI
+
+on:
+  push:
+    paths:
+      - 'pkgs/file_sftp/**'
+      - 'pkgs/storage_fs/**'
+      - 'pubspec.yaml'
+      - 'pkgs/storage_fs/example/**'
+  pull_request:
+    paths:
+      - 'pkgs/file_sftp/**'
+      - 'pkgs/storage_fs/**'
+      - 'pubspec.yaml'
+      - 'pkgs/storage_fs/example/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pkgs/file_sftp
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Analyze
+        run: dart analyze
+
+      - name: Unit tests (mock)
+        run: dart test test/sftp_adapter_test.dart
+
+      - name: Integration tests (Docker)
+        run: dart test test/sftp_integration_test.dart
+        timeout-minutes: 10
