@@ -63,9 +63,13 @@ class SftpConfig {
       privateKeyPems: map['private_key'] != null
           ? [map['private_key'] as String]
           : null,
+      privateKeyPassphrase: map['private_key_passphrase'] as String?,
       root: map['root'] as String?,
       throw_: map['throw'] as bool? ?? false,
       readOnly: map['read-only'] as bool? ?? false,
+      directorySeparator: map['directory_separator'] as String? ?? '/',
+      timeout: _durationFromMap(map['timeout']),
+      connectTimeout: _durationFromMap(map['connect_timeout']),
     );
   }
 
@@ -77,9 +81,15 @@ class SftpConfig {
       'username': username,
       if (password != null) 'password': password,
       if (privateKeyPems != null) 'private_key': privateKeyPems!.first,
+      if (privateKeyPassphrase != null)
+        'private_key_passphrase': privateKeyPassphrase,
       if (root != null) 'root': root,
       'throw': throw_,
       'read-only': readOnly,
+      'directory_separator': directorySeparator,
+      if (timeout != null) 'timeout': timeout!.inMilliseconds,
+      if (connectTimeout != null)
+        'connect_timeout': connectTimeout!.inMilliseconds,
     };
   }
 
@@ -113,4 +123,10 @@ class SftpConfig {
       connectTimeout: connectTimeout ?? this.connectTimeout,
     );
   }
+}
+
+Duration? _durationFromMap(dynamic value) {
+  if (value is int) return Duration(milliseconds: value);
+  if (value is Duration) return value;
+  return null;
 }

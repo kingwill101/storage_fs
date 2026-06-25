@@ -40,19 +40,22 @@ class LocalDisk extends Disk {
   });
 
   @override
-  Filesystem build() {
-    return FilesystemAdapter(
-      DiskConfig(
-        driver: 'local',
-        root: root,
-        url: url,
-        visibility: visibility,
-        throw_: throwExceptions,
-        report: report,
-        readOnly: readOnly,
-        directorySeparator: directorySeparator,
-        prefix: prefix,
-      ),
+  DiskConfig toDiskConfig() {
+    return DiskConfig(
+      driver: 'local',
+      root: root,
+      url: url,
+      visibility: visibility,
+      throw_: throwExceptions,
+      report: report,
+      readOnly: readOnly,
+      directorySeparator: directorySeparator,
+      prefix: prefix,
     );
+  }
+
+  @override
+  Filesystem build() {
+    return FilesystemAdapter(toDiskConfig());
   }
 }

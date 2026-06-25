@@ -28,12 +28,7 @@ class StorageConfig {
   }) {
     final diskMap = <String, DiskConfig>{};
     for (final disk in disks) {
-      diskMap[disk.name] = DiskConfig(
-        driver: disk.name,
-        root: disk.root,
-        throw_: disk.throwExceptions,
-        readOnly: disk.readOnly,
-      );
+      diskMap[disk.name] = disk.toDiskConfig();
     }
     return StorageConfig(
       defaultDisk: defaultDisk,

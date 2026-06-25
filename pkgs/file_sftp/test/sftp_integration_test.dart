@@ -267,8 +267,8 @@ Future<void> main() async {
         sftpConfig(sftpPort()).copyWith(throw_: true),
       );
       try {
-        expect(
-          () => strictAdapter.get('nonexistent.txt'),
+        await expectLater(
+          strictAdapter.get('nonexistent.txt'),
           throwsA(isA<UnableToReadFileException>()),
         );
       } finally {

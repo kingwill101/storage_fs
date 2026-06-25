@@ -58,12 +58,27 @@ class S3Disk extends Disk {
   });
 
   @override
+  DiskConfig toDiskConfig() {
+    return DiskConfig(
+      driver: 's3',
+      root: root,
+      url: url,
+      throw_: throwExceptions,
+      readOnly: readOnly,
+      options: {
+        'endpoint': endpoint,
+        'key': accessKey ?? '',
+        'secret': secretKey ?? '',
+        'bucket': bucket,
+        'region': region ?? 'us-east-1',
+        'use_ssl': useSSL,
+      },
+    );
+  }
+
+  @override
   Filesystem build() {
-    final endpointParts = endpoint.split(':');
-    final host = endpointParts[0];
-    final port = endpointParts.length > 1
-        ? int.parse(endpointParts[1])
-        : (useSSL ? 443 : 9000);
+    final (:host, :port) = _parseEndpoint(endpoint, useSSL: useSSL);
 
     final minio = Minio(
       endPoint: host,
@@ -88,22 +103,20 @@ class S3Disk extends Disk {
 
     return CloudAdapter(
       fileSystem: cloudFs,
-      config: DiskConfig(
-        driver: 's3',
-        root: root,
-        url: url,
-        throw_: throwExceptions,
-        readOnly: readOnly,
-        options: {
-          'endpoint': endpoint,
-          'key': accessKey ?? '',
-          'secret': secretKey ?? '',
-          'bucket': bucket,
-          'region': region ?? 'us-east-1',
-          'use_ssl': useSSL,
-        },
-      ),
+      config: toDiskConfig(),
       baseUrl: url != null ? Uri.tryParse(url!) : null,
     );
   }
+}
+
+({String host, int port}) _parseEndpoint(
+  String endpoint, {
+  required bool useSSL,
+}) {
+  final uri = Uri.tryParse(
+    endpoint.contains('://') ? endpoint : 'http://$endpoint',
+  );
+  final host = uri?.host.isNotEmpty == true ? uri!.host : endpoint;
+  final port = (uri?.hasPort ?? false) ? uri!.port : (useSSL ? 443 : 9000);
+  return (host: host, port: port);
 }

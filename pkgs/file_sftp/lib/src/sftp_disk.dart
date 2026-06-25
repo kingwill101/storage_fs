@@ -56,6 +56,25 @@ class SftpDisk extends sf.Disk {
   });
 
   @override
+  sf.DiskConfig toDiskConfig() {
+    return sf.DiskConfig(
+      driver: 'sftp',
+      root: root,
+      throw_: throwExceptions,
+      readOnly: readOnly,
+      options: {
+        'host': host,
+        'port': port,
+        'username': username,
+        if (password != null) 'password': password,
+        if (privateKeyPem != null) 'private_key': privateKeyPem,
+        if (privateKeyPassphrase != null)
+          'private_key_passphrase': privateKeyPassphrase,
+      },
+    );
+  }
+
+  @override
   sf.Filesystem build() {
     return SftpFilesystemAdapter(
       SftpConfig(

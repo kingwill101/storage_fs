@@ -5,5 +5,6 @@
 library;
 
 export 'src/sftp_config.dart';
+export 'src/sftp_fs.dart';
 export 'src/sftp_filesystem_adapter.dart';
 export 'src/sftp_disk.dart';

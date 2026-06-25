@@ -111,6 +111,14 @@ class SftpFilesystemAdapter implements sf.Filesystem {
 
   bool _throwsExceptions() => config.throw_;
 
+  bool _ensureWritable() {
+    if (!config.readOnly) return true;
+    if (_throwsExceptions()) {
+      throw FilesystemException('Disk is read-only.');
+    }
+    return false;
+  }
+
   String? get name => _diskName;
 
   SftpFilesystemAdapter diskName(String name) {
@@ -211,14 +219,24 @@ class SftpFilesystemAdapter implements sf.Filesystem {
 
   @override
   Stream<List<int>>? readStream(String path) {
+    late Stream<List<int>> stream;
     try {
-      return _readStream(path).asStream().asyncExpand((s) => s);
+      stream = _readStream(path).asStream().asyncExpand((s) => s);
     } catch (e) {
       if (_throwsExceptions()) {
         throw UnableToReadFileException(path, cause: e);
       }
       return null;
     }
+
+    return stream.handleError((Object e, StackTrace stack) {
+      if (_throwsExceptions()) {
+        Error.throwWithStackTrace(
+          UnableToReadFileException(path, cause: e),
+          stack,
+        );
+      }
+    });
   }
 
   Future<Stream<List<int>>> _readStream(String path) async {
@@ -248,6 +266,8 @@ class SftpFilesystemAdapter implements sf.Filesystem {
     dynamic contents, {
     Map<String, dynamic>? options,
   }) async {
+    if (!_ensureWritable()) return false;
+
     try {
       final fs = await _ensureConnected();
       final fullPath = _getFullPath(path);
@@ -295,6 +315,8 @@ class SftpFilesystemAdapter implements sf.Filesystem {
     Stream<List<int>> resource, {
     Map<String, dynamic>? options,
   }) async {
+    if (!_ensureWritable()) return false;
+
     try {
       final fs = await _ensureConnected();
       final fullPath = _getFullPath(path);
@@ -337,6 +359,8 @@ class SftpFilesystemAdapter implements sf.Filesystem {
 
   @override
   Future<bool> setVisibility(String path, String visibility) async {
+    if (!_ensureWritable()) return false;
+
     try {
       final fs = await _ensureConnected();
       final fullPath = _getFullPath(path);
@@ -390,6 +414,8 @@ class SftpFilesystemAdapter implements sf.Filesystem {
 
   @override
   Future<bool> delete(dynamic paths) async {
+    if (!_ensureWritable()) return false;
+
     final pathList = paths is List ? paths : [paths];
     var success = true;
 
@@ -410,6 +436,8 @@ class SftpFilesystemAdapter implements sf.Filesystem {
 
   @override
   Future<bool> copy(String from, String to) async {
+    if (!_ensureWritable()) return false;
+
     try {
       final fs = await _ensureConnected();
       final fullFrom = _getFullPath(from);
@@ -441,6 +469,8 @@ class SftpFilesystemAdapter implements sf.Filesystem {
 
   @override
   Future<bool> move(String from, String to) async {
+    if (!_ensureWritable()) return false;
+
     try {
       final fs = await _ensureConnected();
       final fullFrom = _getFullPath(from);
@@ -622,6 +652,8 @@ class SftpFilesystemAdapter implements sf.Filesystem {
 
   @override
   Future<bool> makeDirectory(String path) async {
+    if (!_ensureWritable()) return false;
+
     try {
       final fs = await _ensureConnected();
       final fullPath = _getFullPath(path);
@@ -638,6 +670,8 @@ class SftpFilesystemAdapter implements sf.Filesystem {
 
   @override
   Future<bool> deleteDirectory(String directory) async {
+    if (!_ensureWritable()) return false;
+
     try {
       final fullPath = _getFullPath(directory);
       await _deleteTree(fullPath);

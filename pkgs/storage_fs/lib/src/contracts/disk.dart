@@ -1,3 +1,4 @@
+import '../config/disk_config.dart';
 import 'filesystem.dart';
 
 /// Typed configuration for a storage disk.
@@ -21,4 +22,7 @@ abstract class Disk {
 
   /// Build the [Filesystem] instance from this typed configuration.
   Filesystem build();
+
+  /// Convert this typed disk to a serializable [DiskConfig].
+  DiskConfig toDiskConfig();
 }

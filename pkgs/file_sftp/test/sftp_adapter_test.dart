@@ -8,6 +8,7 @@ import 'package:file_sftp/src/sftp_fs.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:storage_fs/storage_fs.dart'
     show
+        FilesystemException,
         UnableToReadFileException,
         UnableToWriteFileException,
         UnableToDeleteFileException,
@@ -78,6 +79,25 @@ void main() {
       when(() => mockFs.open('/foo.txt')).thenThrow(Exception('fail'));
       expect(await adapter.get('foo.txt'), isNull);
     });
+
+    test(
+      'readStream rethrows async open failures when throwExceptions is true',
+      () async {
+        adapter = SftpFilesystemAdapter.fromSftpFs(
+          mockFs,
+          config: () =>
+              const SftpConfig(host: '', username: '', root: '/', throw_: true),
+        );
+        when(() => mockFs.open('/foo.txt')).thenThrow(Exception('fail'));
+
+        final stream = adapter.readStream('foo.txt');
+        expect(stream, isNotNull);
+        await expectLater(
+          stream!.toList(),
+          throwsA(isA<UnableToReadFileException>()),
+        );
+      },
+    );
   });
 
   group('put', () {
@@ -399,8 +419,8 @@ void main() {
 
     test('get throws UnableToReadFileException', () async {
       when(() => mockFs.open('/foo.txt')).thenThrow(Exception('fail'));
-      expect(
-        () => adapter.get('foo.txt'),
+      await expectLater(
+        adapter.get('foo.txt'),
         throwsA(isA<UnableToReadFileException>()),
       );
     });
@@ -409,24 +429,24 @@ void main() {
       when(
         () => mockFs.open('/foo.txt', mode: any(named: 'mode')),
       ).thenThrow(Exception('fail'));
-      expect(
-        () => adapter.put('foo.txt', 'data'),
+      await expectLater(
+        adapter.put('foo.txt', 'data'),
         throwsA(isA<UnableToWriteFileException>()),
       );
     });
 
     test('delete throws UnableToDeleteFileException', () async {
       when(() => mockFs.remove('/foo.txt')).thenThrow(Exception('fail'));
-      expect(
-        () => adapter.delete('foo.txt'),
+      await expectLater(
+        adapter.delete('foo.txt'),
         throwsA(isA<UnableToDeleteFileException>()),
       );
     });
 
     test('copy throws UnableToCopyFileException', () async {
       when(() => mockFs.open('/from.txt')).thenThrow(Exception('fail'));
-      expect(
-        () => adapter.copy('from.txt', 'to.txt'),
+      await expectLater(
+        adapter.copy('from.txt', 'to.txt'),
         throwsA(isA<UnableToCopyFileException>()),
       );
     });
@@ -436,32 +456,32 @@ void main() {
         () => mockFs.rename('/from.txt', '/to.txt'),
       ).thenThrow(Exception('fail'));
       when(() => mockFs.open('/from.txt')).thenThrow(Exception('fail'));
-      expect(
-        () => adapter.move('from.txt', 'to.txt'),
+      await expectLater(
+        adapter.move('from.txt', 'to.txt'),
         throwsA(isA<UnableToMoveFileException>()),
       );
     });
 
     test('size throws UnableToRetrieveMetadataException', () async {
       when(() => mockFs.stat('/foo.txt')).thenThrow(Exception('fail'));
-      expect(
-        () => adapter.size('foo.txt'),
+      await expectLater(
+        adapter.size('foo.txt'),
         throwsA(isA<UnableToRetrieveMetadataException>()),
       );
     });
 
     test('makeDirectory throws UnableToCreateDirectoryException', () async {
       when(() => mockFs.mkdir('/dir')).thenThrow(Exception('fail'));
-      expect(
-        () => adapter.makeDirectory('dir'),
+      await expectLater(
+        adapter.makeDirectory('dir'),
         throwsA(isA<UnableToCreateDirectoryException>()),
       );
     });
 
     test('deleteDirectory throws UnableToDeleteDirectoryException', () async {
       when(() => mockFs.listdir('/dir')).thenThrow(Exception('fail'));
-      expect(
-        () => adapter.deleteDirectory('dir'),
+      await expectLater(
+        adapter.deleteDirectory('dir'),
         throwsA(isA<UnableToDeleteDirectoryException>()),
       );
     });
@@ -497,6 +517,83 @@ void main() {
 
       final result = await adapter.files();
       expect(result, equals(['a.txt']));
+    });
+  });
+
+  group('readOnly mode', () {
+    setUp(() {
+      adapter = SftpFilesystemAdapter.fromSftpFs(
+        mockFs,
+        config: () =>
+            const SftpConfig(host: '', username: '', root: '/', readOnly: true),
+      );
+    });
+
+    test('put returns false without touching SFTP', () async {
+      expect(await adapter.put('foo.txt', 'data'), isFalse);
+      verifyNever(() => mockFs.open(any(), mode: any(named: 'mode')));
+    });
+
+    test('delete returns false without touching SFTP', () async {
+      expect(await adapter.delete('foo.txt'), isFalse);
+      verifyNever(() => mockFs.remove(any()));
+    });
+
+    test('makeDirectory returns false without touching SFTP', () async {
+      expect(await adapter.makeDirectory('dir'), isFalse);
+      verifyNever(() => mockFs.mkdir(any()));
+    });
+
+    test('mutating operations throw when throwExceptions is true', () async {
+      adapter = SftpFilesystemAdapter.fromSftpFs(
+        mockFs,
+        config: () => const SftpConfig(
+          host: '',
+          username: '',
+          root: '/',
+          readOnly: true,
+          throw_: true,
+        ),
+      );
+
+      await expectLater(
+        adapter.put('foo.txt', 'data'),
+        throwsA(isA<FilesystemException>()),
+      );
+    });
+  });
+
+  group('SftpConfig serialization', () {
+    test('toMap/fromMap roundtrip preserves all fields', () {
+      const original = SftpConfig(
+        host: 'example.com',
+        port: 2222,
+        username: 'deploy',
+        password: 'secret',
+        privateKeyPems: ['-----BEGIN KEY-----'],
+        privateKeyPassphrase: 'phrase',
+        root: '/remote',
+        throw_: true,
+        readOnly: true,
+        directorySeparator: '\\',
+        timeout: Duration(seconds: 30),
+        connectTimeout: Duration(seconds: 5),
+      );
+
+      final restored = SftpConfig.fromMap(original.toMap());
+
+      expect(restored.host, original.host);
+      expect(restored.port, original.port);
+      expect(restored.username, original.username);
+      expect(restored.password, original.password);
+      expect(restored.privateKeyPems, original.privateKeyPems);
+      expect(restored.privateKeyPassphrase, original.privateKeyPassphrase);
+      expect(restored.root, original.root);
+      expect(restored.throw_, original.throw_);
+      expect(restored.readOnly, original.readOnly);
+      expect(restored.directorySeparator, original.directorySeparator);
+      expect(restored.timeout, original.timeout);
+      expect(restored.connectTimeout, original.connectTimeout);
     });
   });
 

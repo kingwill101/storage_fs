@@ -72,7 +72,7 @@ final disk = SftpDisk(
     username: 'user',
     password: 'password',
     root: '/remote/path',
-    throw: false,
+    throw_: false,
   ),
 );
 ```
