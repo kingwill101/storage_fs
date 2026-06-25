@@ -5,54 +5,27 @@ import 'package:file_sftp/src/sftp_config.dart';
 import 'package:file_sftp/src/sftp_filesystem_adapter.dart';
 import 'package:storage_fs/storage_fs.dart';
 import 'package:test/test.dart';
+import 'package:testcontainers_compose/testcontainers_compose.dart';
 
-String _resolveComposeDir() {
-  final relative = File('test/fixtures/docker-compose.yaml');
-  if (relative.existsSync()) return 'test/fixtures';
+String _composeContext() {
+  final inPackage = File('test/fixtures/docker-compose.yaml');
+  if (inPackage.existsSync()) return 'test/fixtures';
   return 'pkgs/file_sftp/test/fixtures';
 }
 
-Future<void> _startStack() async {
-  final composeDir = _resolveComposeDir();
-  final result = await Process.run('docker', ['compose', '-f', '$composeDir/docker-compose.yaml', 'up', '-d']);
-  if (result.exitCode != 0) {
-    throw StateError('docker compose up failed: ${result.stderr}');
-  }
-}
-
-Future<void> _stopStack() async {
-  final composeDir = _resolveComposeDir();
-  final result = await Process.run(
-    'docker',
-    ['compose', '-f', '$composeDir/docker-compose.yaml', 'down', '-v'],
-  );
-  if (result.exitCode != 0) {
-    throw StateError('docker compose down failed: ${result.stderr}');
-  }
-}
-
-Future<int> _getSftpPort() async {
-  final composeDir = _resolveComposeDir();
-  final result = await Process.run(
-    'docker',
-    ['compose', '-f', '$composeDir/docker-compose.yaml', 'ps', '--format', '{{.Ports}}'],
-  );
-  if (result.exitCode != 0 || (result.stdout as String).isEmpty) {
-    throw StateError('docker compose ps failed: ${result.stderr}');
-  }
-  final portMatch = RegExp(r'0\.0\.0\.0:(\d+)->22/tcp').firstMatch(result.stdout as String);
-  if (portMatch == null) {
-    throw StateError('Could not find exposed port in: ${result.stdout}');
-  }
-  return int.parse(portMatch.group(1)!);
-}
-
-void main() {
+Future<void> main() async {
   group('SFTP Integration Tests (Docker)', () {
+    late DockerCompose compose;
+
     setUpAll(() async {
-      await _startStack();
+      compose = DockerCompose(
+        context: _composeContext(),
+        composeFileName: ['docker-compose.yaml'],
+        wait: true,
+      );
+      await compose.start();
       await Future<void>.delayed(const Duration(seconds: 5));
-      addTearDown(() async => await _stopStack());
+      addTearDown(() => compose.stop(down: true));
     });
 
     SftpConfig sftpConfig(int port) => SftpConfig(
@@ -63,9 +36,15 @@ void main() {
       root: '/upload',
     );
 
+    int sftpPort() {
+      return compose
+          .container('sftp')
+          .publisher(byPort: 22)
+          .publishedPort!;
+    }
+
     test('connects and checks file existence', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         expect(await adapter.exists('nonexistent.txt'), isFalse);
         expect(await adapter.missing('nonexistent.txt'), isTrue);
@@ -75,8 +54,7 @@ void main() {
     });
 
     test('writes and reads a file', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         final result = await adapter.put('greeting.txt', 'Hello SFTP!');
         expect(result, isTrue);
@@ -88,8 +66,7 @@ void main() {
     });
 
     test('writes bytes to file', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         final bytes = <int>[0, 1, 2, 3, 255, 254];
         final result = await adapter.put('binary.bin', bytes);
@@ -104,8 +81,7 @@ void main() {
     });
 
     test('deletes a file', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('to-delete.txt', 'bye');
         expect(await adapter.exists('to-delete.txt'), isTrue);
@@ -118,8 +94,7 @@ void main() {
     });
 
     test('copies a file', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('source.txt', 'copy me');
         final result = await adapter.copy('source.txt', 'dest.txt');
@@ -131,8 +106,7 @@ void main() {
     });
 
     test('moves a file', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('original.txt', 'moving');
         final result = await adapter.move('original.txt', 'moved.txt');
@@ -146,8 +120,7 @@ void main() {
     });
 
     test('creates and deletes a directory', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         final result = await adapter.makeDirectory('new-dir');
         expect(result, isTrue);
@@ -159,8 +132,7 @@ void main() {
     });
 
     test('lists files in root directory', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('a.txt', 'alpha');
         await adapter.put('b.txt', 'beta');
@@ -173,8 +145,7 @@ void main() {
     });
 
     test('gets file size', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('sized.txt', 'hello world');
         final size = await adapter.size('sized.txt');
@@ -185,8 +156,7 @@ void main() {
     });
 
     test('gets last modified time', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('timestamped.txt', 'time');
         final modified = await adapter.lastModified('timestamped.txt');
@@ -201,8 +171,7 @@ void main() {
     });
 
     test('gets mime type', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('mime.txt', 'text content');
         final mimeType = await adapter.mimeType('mime.txt');
@@ -213,8 +182,7 @@ void main() {
     });
 
     test('computes md5 checksum', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('checksum.txt', 'hello checksum');
         final checksum = await adapter.checksum('checksum.txt', algorithm: 'md5');
@@ -226,8 +194,7 @@ void main() {
     });
 
     test('appends to file', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('append.txt', 'line1');
         final result = await adapter.append('append.txt', 'line2', separator: '\n');
@@ -240,8 +207,7 @@ void main() {
     });
 
     test('prepends to file', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('prepend.txt', 'line2');
         final result = await adapter.prepend('prepend.txt', 'line1', separator: '\n');
@@ -254,8 +220,7 @@ void main() {
     });
 
     test('sets and gets visibility', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('vis.txt', 'visible');
         final vis = await adapter.getVisibility('vis.txt');
@@ -266,8 +231,7 @@ void main() {
     });
 
     test('supports stream read and write', () async {
-      final port = await _getSftpPort();
-      final adapter = SftpFilesystemAdapter(sftpConfig(port));
+      final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         final input = Stream.fromIterable([
           [1, 2, 3],
@@ -291,8 +255,9 @@ void main() {
     });
 
     test('throwExceptions mode rethrows errors', () async {
-      final port = await _getSftpPort();
-      final strictAdapter = SftpFilesystemAdapter(sftpConfig(port).copyWith(throw_: true));
+      final strictAdapter = SftpFilesystemAdapter(
+        sftpConfig(sftpPort()).copyWith(throw_: true),
+      );
       try {
         expect(
           () => strictAdapter.get('nonexistent.txt'),
@@ -304,8 +269,7 @@ void main() {
     });
 
     test('connects with password via fromClient', () async {
-      final port = await _getSftpPort();
-      final socket = await SSHSocket.connect('localhost', port);
+      final socket = await SSHSocket.connect('localhost', sftpPort());
       final sshClient = SSHClient(
         socket,
         username: 'testuser',
@@ -317,7 +281,7 @@ void main() {
 
       final adapter = SftpFilesystemAdapter.fromClient(
         sftp,
-        config: () => sftpConfig(port),
+        config: () => sftpConfig(sftpPort()),
       );
       try {
         expect(await adapter.exists('nonexistent.txt'), isFalse);
