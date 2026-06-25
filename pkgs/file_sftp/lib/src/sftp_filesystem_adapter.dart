@@ -40,16 +40,15 @@ class SftpFilesystemAdapter implements sf.Filesystem {
     SftpConfig Function()? config,
   }) : _fs = SftpFsClient(sftp),
        _connected = true,
-       config = config?.call() ??
+       config =
+           config?.call() ??
            const SftpConfig(host: '', username: '', root: '/');
 
-  SftpFilesystemAdapter.fromSftpFs(
-    SftpFs fs, {
-    SftpConfig Function()? config,
-  }) : _fs = fs,
-       _connected = true,
-       config = config?.call() ??
-           const SftpConfig(host: '', username: '', root: '/');
+  SftpFilesystemAdapter.fromSftpFs(SftpFs fs, {SftpConfig Function()? config})
+    : _fs = fs,
+      _connected = true,
+      config =
+          config?.call() ?? const SftpConfig(host: '', username: '', root: '/');
 
   Future<SftpFs> _ensureConnected() async {
     if (_connected && _fs != null) return _fs!;
@@ -63,12 +62,13 @@ class SftpFilesystemAdapter implements sf.Filesystem {
     _sshClient = SSHClient(
       socket,
       username: config.username,
-      onPasswordRequest:
-          config.password != null ? () => config.password! : null,
-      identities: config.privateKeyPems
+      onPasswordRequest: config.password != null
+          ? () => config.password!
+          : null,
+      identities:
+          config.privateKeyPems
               ?.expand(
-                (pem) =>
-                    SSHKeyPair.fromPem(pem, config.privateKeyPassphrase),
+                (pem) => SSHKeyPair.fromPem(pem, config.privateKeyPassphrase),
               )
               .toList() ??
           const [],
@@ -149,7 +149,7 @@ class SftpFilesystemAdapter implements sf.Filesystem {
     await fs.rmdir(path);
   }
 
-Future<List<String>> _collectFiles(
+  Future<List<String>> _collectFiles(
     String path,
     bool recursive, {
     required bool collectFiles,
@@ -158,22 +158,22 @@ Future<List<String>> _collectFiles(
     final result = <String>[];
     final entries = await fs.listdir(path);
     for (final entry in entries) {
-        if (entry.filename == '.' || entry.filename == '..') continue;
-        final childPath = p.join(path, entry.filename);
-        final isDir = entry.attr.isDirectory;
-        if (isDir && collectFiles) continue;
-        if (!isDir && !collectFiles) continue;
-        if (isDir && recursive) {
-            result.addAll(
-                await _collectFiles(childPath, true, collectFiles: collectFiles),
-            );
+      if (entry.filename == '.' || entry.filename == '..') continue;
+      final childPath = p.join(path, entry.filename);
+      final isDir = entry.attr.isDirectory;
+      if (isDir && collectFiles) continue;
+      if (!isDir && !collectFiles) continue;
+      if (isDir && recursive) {
+        result.addAll(
+          await _collectFiles(childPath, true, collectFiles: collectFiles),
+        );
+      }
+      if (!isDir || !collectFiles) {
+        final relative = _relativePath(childPath);
+        if (relative.isNotEmpty) {
+          result.add(relative);
         }
-        if (!isDir || !collectFiles) {
-            final relative = _relativePath(childPath);
-            if (relative.isNotEmpty) {
-                result.add(relative);
-            }
-        }
+      }
     }
     result.sort();
     return result;
@@ -255,7 +255,8 @@ Future<List<String>> _collectFiles(
 
       final file = await fs.open(
         fullPath,
-        mode: SftpFileOpenMode.create |
+        mode:
+            SftpFileOpenMode.create |
             SftpFileOpenMode.truncate |
             SftpFileOpenMode.write,
       );
@@ -268,7 +269,9 @@ Future<List<String>> _collectFiles(
         await file.write(contents);
       } else {
         await file.close();
-        throw ArgumentError('Unsupported content type: ${contents.runtimeType}');
+        throw ArgumentError(
+          'Unsupported content type: ${contents.runtimeType}',
+        );
       }
 
       await file.close();
@@ -299,7 +302,8 @@ Future<List<String>> _collectFiles(
 
       final file = await fs.open(
         fullPath,
-        mode: SftpFileOpenMode.create |
+        mode:
+            SftpFileOpenMode.create |
             SftpFileOpenMode.truncate |
             SftpFileOpenMode.write,
       );
@@ -418,7 +422,8 @@ Future<List<String>> _collectFiles(
 
       final destFile = await fs.open(
         fullTo,
-        mode: SftpFileOpenMode.create |
+        mode:
+            SftpFileOpenMode.create |
             SftpFileOpenMode.truncate |
             SftpFileOpenMode.write,
       );
@@ -544,9 +549,7 @@ Future<List<String>> _collectFiles(
       final fs = await _ensureConnected();
       final attrs = await fs.stat(_getFullPath(path));
       if (attrs.modifyTime != null) {
-        return DateTime.fromMillisecondsSinceEpoch(
-          attrs.modifyTime! * 1000,
-        );
+        return DateTime.fromMillisecondsSinceEpoch(attrs.modifyTime! * 1000);
       }
       return DateTime.now();
     } catch (e) {

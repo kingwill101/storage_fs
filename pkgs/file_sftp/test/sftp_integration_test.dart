@@ -37,10 +37,7 @@ Future<void> main() async {
     );
 
     int sftpPort() {
-      return compose
-          .container('sftp')
-          .publisher(byPort: 22)
-          .publishedPort!;
+      return compose.container('sftp').publisher(byPort: 22).publishedPort!;
     }
 
     test('connects and checks file existence', () async {
@@ -185,7 +182,10 @@ Future<void> main() async {
       final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('checksum.txt', 'hello checksum');
-        final checksum = await adapter.checksum('checksum.txt', algorithm: 'md5');
+        final checksum = await adapter.checksum(
+          'checksum.txt',
+          algorithm: 'md5',
+        );
         expect(checksum, isNotNull);
         expect(checksum!.length, equals(32));
       } finally {
@@ -197,7 +197,11 @@ Future<void> main() async {
       final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('append.txt', 'line1');
-        final result = await adapter.append('append.txt', 'line2', separator: '\n');
+        final result = await adapter.append(
+          'append.txt',
+          'line2',
+          separator: '\n',
+        );
         expect(result, isTrue);
         final content = await adapter.get('append.txt');
         expect(content, equals('line1\nline2'));
@@ -210,7 +214,11 @@ Future<void> main() async {
       final adapter = SftpFilesystemAdapter(sftpConfig(sftpPort()));
       try {
         await adapter.put('prepend.txt', 'line2');
-        final result = await adapter.prepend('prepend.txt', 'line1', separator: '\n');
+        final result = await adapter.prepend(
+          'prepend.txt',
+          'line1',
+          separator: '\n',
+        );
         expect(result, isTrue);
         final content = await adapter.get('prepend.txt');
         expect(content, equals('line1\nline2'));

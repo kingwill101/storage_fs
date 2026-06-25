@@ -1,3 +1,10 @@
+# Changelog
+
+## 0.1.1 (2026-06-25)
+
+### Notes
+- Patch release for workspace consistency; no functional changes
+
 ## 0.1.0 (2025-10-16)
 
 ### Features

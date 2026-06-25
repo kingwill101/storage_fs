@@ -1,6 +1,6 @@
 name: storage_fs
 description: A comprehensive filesystem abstraction for Dart, inspired by Laravel's Storage facade. Supports both local and cloud storage with a unified API.
-version: 0.1.0
+version: 0.2.0
 repository: https://github.com/kingwill101/storage_fs/tree/master/pkgs/storage_fs
 resolution: workspace
 

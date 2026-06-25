@@ -63,8 +63,7 @@ class SftpDisk extends sf.Disk {
         port: port,
         username: username,
         password: password,
-        privateKeyPems:
-            privateKeyPem != null ? [privateKeyPem!] : null,
+        privateKeyPems: privateKeyPem != null ? [privateKeyPem!] : null,
         privateKeyPassphrase: privateKeyPassphrase,
         root: root,
         throw_: throwExceptions,

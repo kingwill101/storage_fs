@@ -46,8 +46,9 @@ void main() {
 
   group('exists / missing', () {
     test('exists returns true when stat succeeds', () async {
-      when(() => mockFs.stat('/foo.txt'))
-          .thenAnswer((_) async => SftpFileAttrs());
+      when(
+        () => mockFs.stat('/foo.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs());
       expect(await adapter.exists('foo.txt'), isTrue);
     });
 
@@ -65,8 +66,9 @@ void main() {
   group('get / readStream', () {
     test('get returns file content as string', () async {
       when(() => mockFs.open('/foo.txt')).thenAnswer((_) async => mockFile);
-      when(() => mockFile.readBytes())
-          .thenAnswer((_) async => Uint8List.fromList(utf8.encode('hello')));
+      when(
+        () => mockFile.readBytes(),
+      ).thenAnswer((_) async => Uint8List.fromList(utf8.encode('hello')));
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       expect(await adapter.get('foo.txt'), equals('hello'));
@@ -80,8 +82,9 @@ void main() {
 
   group('put', () {
     test('put writes string content', () async {
-      when(() => mockFs.open('/foo.txt', mode: any(named: 'mode')))
-          .thenAnswer((_) async => mockFile);
+      when(
+        () => mockFs.open('/foo.txt', mode: any(named: 'mode')),
+      ).thenAnswer((_) async => mockFile);
       when(() => mockFile.writeBytes(any())).thenAnswer((_) async {});
       when(() => mockFile.close()).thenAnswer((_) async {});
       when(() => mockFs.stat('/')).thenThrow(Exception('not found'));
@@ -92,8 +95,9 @@ void main() {
     });
 
     test('put writes bytes content', () async {
-      when(() => mockFs.open('/foo.txt', mode: any(named: 'mode')))
-          .thenAnswer((_) async => mockFile);
+      when(
+        () => mockFs.open('/foo.txt', mode: any(named: 'mode')),
+      ).thenAnswer((_) async => mockFile);
       when(() => mockFile.writeBytes(any())).thenAnswer((_) async {});
       when(() => mockFile.close()).thenAnswer((_) async {});
       when(() => mockFs.stat('/')).thenThrow(Exception('not found'));
@@ -105,8 +109,9 @@ void main() {
 
   group('writeStream', () {
     test('writes stream content', () async {
-      when(() => mockFs.open('/foo.txt', mode: any(named: 'mode')))
-          .thenAnswer((_) async => mockFile);
+      when(
+        () => mockFs.open('/foo.txt', mode: any(named: 'mode')),
+      ).thenAnswer((_) async => mockFile);
       when(() => mockFile.write(any())).thenAnswer((_) async {});
       when(() => mockFile.close()).thenAnswer((_) async {});
       when(() => mockFs.stat('/')).thenThrow(Exception('not found'));
@@ -129,26 +134,30 @@ void main() {
       expect(await adapter.delete(['a.txt', 'b.txt']), isTrue);
     });
 
-    test('delete returns false on error when throwExceptions is false',
-        () async {
-      when(() => mockFs.remove('/foo.txt')).thenThrow(Exception('fail'));
-      expect(await adapter.delete('foo.txt'), isFalse);
-    });
+    test(
+      'delete returns false on error when throwExceptions is false',
+      () async {
+        when(() => mockFs.remove('/foo.txt')).thenThrow(Exception('fail'));
+        expect(await adapter.delete('foo.txt'), isFalse);
+      },
+    );
   });
 
   group('copy', () {
     test('copies a file by reading and writing', () async {
       when(() => mockFs.open('/from.txt')).thenAnswer((_) async => mockFile);
-      when(() => mockFile.readBytes())
-          .thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
+      when(
+        () => mockFile.readBytes(),
+      ).thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       when(() => mockFs.stat('/')).thenThrow(Exception('not found'));
       when(() => mockFs.mkdir('/')).thenAnswer((_) async {});
 
       final toFile = _MockSftpFsFile();
-      when(() => mockFs.open('/to.txt', mode: any(named: 'mode')))
-          .thenAnswer((_) async => toFile);
+      when(
+        () => mockFs.open('/to.txt', mode: any(named: 'mode')),
+      ).thenAnswer((_) async => toFile);
       when(() => toFile.writeBytes(any())).thenAnswer((_) async {});
       when(() => toFile.close()).thenAnswer((_) async {});
 
@@ -159,26 +168,30 @@ void main() {
 
   group('move', () {
     test('move renames when possible', () async {
-      when(() => mockFs.rename('/from.txt', '/to.txt'))
-          .thenAnswer((_) async {});
+      when(
+        () => mockFs.rename('/from.txt', '/to.txt'),
+      ).thenAnswer((_) async {});
       expect(await adapter.move('from.txt', 'to.txt'), isTrue);
       verify(() => mockFs.rename('/from.txt', '/to.txt')).called(1);
     });
 
     test('move falls back to copy+delete when rename fails', () async {
-      when(() => mockFs.rename('/from.txt', '/to.txt'))
-          .thenThrow(Exception('rename fail'));
+      when(
+        () => mockFs.rename('/from.txt', '/to.txt'),
+      ).thenThrow(Exception('rename fail'));
       when(() => mockFs.open('/from.txt')).thenAnswer((_) async => mockFile);
-      when(() => mockFile.readBytes())
-          .thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
+      when(
+        () => mockFile.readBytes(),
+      ).thenAnswer((_) async => Uint8List.fromList([1, 2, 3]));
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       when(() => mockFs.stat('/')).thenThrow(Exception('not found'));
       when(() => mockFs.mkdir('/')).thenAnswer((_) async {});
 
       final toFile = _MockSftpFsFile();
-      when(() => mockFs.open('/to.txt', mode: any(named: 'mode')))
-          .thenAnswer((_) async => toFile);
+      when(
+        () => mockFs.open('/to.txt', mode: any(named: 'mode')),
+      ).thenAnswer((_) async => toFile);
       when(() => toFile.writeBytes(any())).thenAnswer((_) async {});
       when(() => toFile.close()).thenAnswer((_) async {});
 
@@ -191,8 +204,9 @@ void main() {
 
   group('size', () {
     test('returns file size from stat', () async {
-      when(() => mockFs.stat('/foo.txt'))
-          .thenAnswer((_) async => SftpFileAttrs(size: 42));
+      when(
+        () => mockFs.stat('/foo.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs(size: 42));
       expect(await adapter.size('foo.txt'), equals(42));
     });
 
@@ -204,14 +218,16 @@ void main() {
 
   group('checksum', () {
     test('returns md5 hex string', () async {
-      when(() => mockFs.stat('/foo.txt'))
-          .thenAnswer((_) async => SftpFileAttrs());
+      when(
+        () => mockFs.stat('/foo.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs());
       when(() => mockFs.open('/foo.txt')).thenAnswer((_) async => mockFile);
-      when(() => mockFile.readBytes(length: 65536, offset: 0)).thenAnswer(
-        (_) async => Uint8List.fromList(utf8.encode('hello')),
-      );
-      when(() => mockFile.readBytes(length: 65536, offset: 5))
-          .thenAnswer((_) async => Uint8List(0));
+      when(
+        () => mockFile.readBytes(length: 65536, offset: 0),
+      ).thenAnswer((_) async => Uint8List.fromList(utf8.encode('hello')));
+      when(
+        () => mockFile.readBytes(length: 65536, offset: 5),
+      ).thenAnswer((_) async => Uint8List(0));
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       final result = await adapter.checksum('foo.txt');
@@ -222,8 +238,9 @@ void main() {
 
   group('lastModified', () {
     test('returns DateTime from modifyTime', () async {
-      when(() => mockFs.stat('/foo.txt'))
-          .thenAnswer((_) async => SftpFileAttrs(modifyTime: 1_000_000));
+      when(
+        () => mockFs.stat('/foo.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs(modifyTime: 1_000_000));
       final dt = await adapter.lastModified('foo.txt');
       expect(dt.millisecondsSinceEpoch, equals(1_000_000_000));
     });
@@ -231,8 +248,7 @@ void main() {
 
   group('files / directories', () {
     test('files returns sorted list', () async {
-      when(() => mockFs.stat('/'))
-          .thenAnswer((_) async => SftpFileAttrs());
+      when(() => mockFs.stat('/')).thenAnswer((_) async => SftpFileAttrs());
       when(() => mockFs.listdir('/')).thenAnswer(
         (_) async => [
           SftpName(
@@ -258,8 +274,7 @@ void main() {
     });
 
     test('directories returns sorted list', () async {
-      when(() => mockFs.stat('/'))
-          .thenAnswer((_) async => SftpFileAttrs());
+      when(() => mockFs.stat('/')).thenAnswer((_) async => SftpFileAttrs());
       when(() => mockFs.listdir('/')).thenAnswer(
         (_) async => [
           SftpName(
@@ -294,9 +309,7 @@ void main() {
     test('getVisibility returns public when otherRead is true', () async {
       when(() => mockFs.stat('/foo.txt')).thenAnswer(
         (_) async => SftpFileAttrs(
-          mode: SftpFileMode(
-            userRead: true, groupRead: true, otherRead: true,
-          ),
+          mode: SftpFileMode(userRead: true, groupRead: true, otherRead: true),
         ),
       );
       expect(
@@ -308,9 +321,7 @@ void main() {
     test('getVisibility returns private when otherRead is false', () async {
       when(() => mockFs.stat('/foo.txt')).thenAnswer(
         (_) async => SftpFileAttrs(
-          mode: SftpFileMode(
-            userRead: true, groupRead: true, otherRead: false,
-          ),
+          mode: SftpFileMode(userRead: true, groupRead: true, otherRead: false),
         ),
       );
       expect(
@@ -320,8 +331,7 @@ void main() {
     });
 
     test('setVisibility sets mode with otherRead', () async {
-      when(() => mockFs.setStat('/foo.txt', any()))
-          .thenAnswer((_) async {});
+      when(() => mockFs.setStat('/foo.txt', any())).thenAnswer((_) async {});
       expect(
         await adapter.setVisibility('foo.txt', sf.Filesystem.visibilityPublic),
         isTrue,
@@ -332,18 +342,21 @@ void main() {
 
   group('prepend / append', () {
     test('prepend adds data before existing content', () async {
-      when(() => mockFs.stat('/foo.txt'))
-          .thenAnswer((_) async => SftpFileAttrs());
+      when(
+        () => mockFs.stat('/foo.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs());
       when(() => mockFs.open('/foo.txt')).thenAnswer((_) async => mockFile);
-      when(() => mockFile.readBytes())
-          .thenAnswer((_) async => Uint8List.fromList(utf8.encode('existing')));
+      when(
+        () => mockFile.readBytes(),
+      ).thenAnswer((_) async => Uint8List.fromList(utf8.encode('existing')));
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       when(() => mockFs.stat('/')).thenThrow(Exception('not found'));
       when(() => mockFs.mkdir('/')).thenAnswer((_) async {});
 
-      when(() => mockFs.open('/foo.txt', mode: any(named: 'mode')))
-          .thenAnswer((_) async => mockFile);
+      when(
+        () => mockFs.open('/foo.txt', mode: any(named: 'mode')),
+      ).thenAnswer((_) async => mockFile);
       when(() => mockFile.writeBytes(any())).thenAnswer((_) async {});
       when(() => mockFile.close()).thenAnswer((_) async {});
 
@@ -352,18 +365,21 @@ void main() {
     });
 
     test('append adds data after existing content', () async {
-      when(() => mockFs.stat('/foo.txt'))
-          .thenAnswer((_) async => SftpFileAttrs());
+      when(
+        () => mockFs.stat('/foo.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs());
       when(() => mockFs.open('/foo.txt')).thenAnswer((_) async => mockFile);
-      when(() => mockFile.readBytes())
-          .thenAnswer((_) async => Uint8List.fromList(utf8.encode('existing')));
+      when(
+        () => mockFile.readBytes(),
+      ).thenAnswer((_) async => Uint8List.fromList(utf8.encode('existing')));
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       when(() => mockFs.stat('/')).thenThrow(Exception('not found'));
       when(() => mockFs.mkdir('/')).thenAnswer((_) async {});
 
-      when(() => mockFs.open('/foo.txt', mode: any(named: 'mode')))
-          .thenAnswer((_) async => mockFile);
+      when(
+        () => mockFs.open('/foo.txt', mode: any(named: 'mode')),
+      ).thenAnswer((_) async => mockFile);
       when(() => mockFile.writeBytes(any())).thenAnswer((_) async {});
       when(() => mockFile.close()).thenAnswer((_) async {});
 
@@ -376,9 +392,8 @@ void main() {
     setUp(() {
       adapter = SftpFilesystemAdapter.fromSftpFs(
         mockFs,
-        config: () => const SftpConfig(
-          host: '', username: '', root: '/', throw_: true,
-        ),
+        config: () =>
+            const SftpConfig(host: '', username: '', root: '/', throw_: true),
       );
     });
 
@@ -391,8 +406,9 @@ void main() {
     });
 
     test('put throws UnableToWriteFileException', () async {
-      when(() => mockFs.open('/foo.txt', mode: any(named: 'mode')))
-          .thenThrow(Exception('fail'));
+      when(
+        () => mockFs.open('/foo.txt', mode: any(named: 'mode')),
+      ).thenThrow(Exception('fail'));
       expect(
         () => adapter.put('foo.txt', 'data'),
         throwsA(isA<UnableToWriteFileException>()),
@@ -416,8 +432,9 @@ void main() {
     });
 
     test('move throws UnableToMoveFileException', () async {
-      when(() => mockFs.rename('/from.txt', '/to.txt'))
-          .thenThrow(Exception('fail'));
+      when(
+        () => mockFs.rename('/from.txt', '/to.txt'),
+      ).thenThrow(Exception('fail'));
       when(() => mockFs.open('/from.txt')).thenThrow(Exception('fail'));
       expect(
         () => adapter.move('from.txt', 'to.txt'),
@@ -454,22 +471,20 @@ void main() {
     setUp(() {
       adapter = SftpFilesystemAdapter.fromSftpFs(
         mockFs,
-        config: () => const SftpConfig(
-          host: '', username: '', root: '/data',
-        ),
+        config: () => const SftpConfig(host: '', username: '', root: '/data'),
       );
     });
 
     test('prepends root to paths', () async {
-      when(() => mockFs.stat('/data/foo.txt'))
-          .thenAnswer((_) async => SftpFileAttrs());
+      when(
+        () => mockFs.stat('/data/foo.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs());
       expect(await adapter.exists('foo.txt'), isTrue);
       verify(() => mockFs.stat('/data/foo.txt')).called(1);
     });
 
     test('files returns paths relative to root', () async {
-      when(() => mockFs.stat('/data'))
-          .thenAnswer((_) async => SftpFileAttrs());
+      when(() => mockFs.stat('/data')).thenAnswer((_) async => SftpFileAttrs());
       when(() => mockFs.listdir('/data')).thenAnswer(
         (_) async => [
           SftpName(

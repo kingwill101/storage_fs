@@ -6,6 +6,7 @@ import 'filesystem.dart';
 /// Instances are passed to [Storage.initialize] or [FilesystemManager.addDisks].
 abstract class Disk {
   const Disk();
+
   /// The disk name used to reference it via [Storage.disk] or [FilesystemManager.disk].
   String get name;
 

@@ -104,8 +104,7 @@ class SftpConfig {
       username: username ?? this.username,
       password: password ?? this.password,
       privateKeyPems: privateKeyPems ?? this.privateKeyPems,
-      privateKeyPassphrase:
-          privateKeyPassphrase ?? this.privateKeyPassphrase,
+      privateKeyPassphrase: privateKeyPassphrase ?? this.privateKeyPassphrase,
       root: root ?? this.root,
       throw_: throw_ ?? this.throw_,
       readOnly: readOnly ?? this.readOnly,
