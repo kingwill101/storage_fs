@@ -201,3 +201,63 @@ jobs:
 
       - name: Run cloud tests (file_cloud)
         run: cd pkgs/file_cloud && dart test -r expanded
+
+  # Test file_sftp package (unit tests, no Docker)
+  test-file-sftp:
+    name: Test file_sftp package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Cache Pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-file-sftp-${{ hashFiles('pkgs/file_sftp/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-file-sftp-
+
+      - name: Install workspace dependencies
+        run: dart pub get
+
+      - name: Check formatting (file_sftp)
+        run: dart format --output=none --set-exit-if-changed pkgs/file_sftp
+
+      - name: Analyze (file_sftp)
+        run: dart analyze --fatal-infos --fatal-warnings pkgs/file_sftp
+
+      - name: Run unit tests (file_sftp)
+        run: cd pkgs/file_sftp && dart test test/sftp_adapter_test.dart -r expanded
+
+  # SFTP integration tests (requires Docker)
+  sftp-integration-tests:
+    name: SFTP Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Cache Pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-file-sftp-${{ hashFiles('pkgs/file_sftp/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-file-sftp-
+
+      - name: Install workspace dependencies
+        run: dart pub get
+
+      - name: Run integration tests (file_sftp)
+        run: cd pkgs/file_sftp && dart test test/sftp_integration_test.dart -r expanded
