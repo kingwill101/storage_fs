@@ -3,6 +3,7 @@ publish_to: none
 workspace:
   - pkgs/file_cloud
   - pkgs/storage_fs
+  - pkgs/file_sftp
 
 environment:
   sdk: ">=3.9.0<4.0.0"

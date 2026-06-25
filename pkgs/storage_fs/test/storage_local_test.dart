@@ -14,7 +14,7 @@ void main() {
       testRoot = '${Directory.systemTemp.path}/storage_test';
       testPrefix = 'local-test-${DateTime.now().millisecondsSinceEpoch}';
 
-      Storage.initialize({
+      Storage.initializeFromMap({
         'default': 'local',
         'disks': {
           'local': {'driver': 'local', 'root': testRoot},

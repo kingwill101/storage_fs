@@ -3,7 +3,7 @@ import 'dart:io';
 
 void main() async {
   // Initialize storage with configuration
-  Storage.initialize({
+  Storage.initializeFromMap({
     'default': 'local',
     'disks': {
       'local': {

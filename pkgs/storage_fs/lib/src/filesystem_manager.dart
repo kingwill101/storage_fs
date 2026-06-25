@@ -1,4 +1,5 @@
 import 'contracts/cloud.dart';
+import 'contracts/disk.dart';
 import 'contracts/factory.dart';
 import 'contracts/filesystem.dart';
 import 'adapters/filesystem_adapter.dart';
@@ -24,6 +25,22 @@ class FilesystemManager implements Factory {
     return FilesystemManager(StorageConfig.fromMap(map));
   }
 
+  /// Register typed disk configurations.
+  ///
+  /// Each [Disk] implementation knows how to build its own [Filesystem] adapter.
+  FilesystemManager addDisks(Iterable<Disk> disks) {
+    for (final disk in disks) {
+      _disks[disk.name] = disk.build();
+    }
+    return this;
+  }
+
+  /// Register a single typed disk configuration.
+  FilesystemManager addDisk(Disk disk) {
+    _disks[disk.name] = disk.build();
+    return this;
+  }
+
   /// Get a filesystem instance (alias for [disk]).
   Filesystem drive([String? name]) => disk(name);
 
@@ -47,6 +64,9 @@ class FilesystemManager implements Factory {
 
   /// Build an on-demand disk.
   Filesystem build(dynamic config) {
+    if (config is Disk) {
+      return config.build();
+    }
     if (config is String) {
       return _resolve('ondemand', DiskConfig(driver: 'local', root: config));
     } else if (config is DiskConfig) {
@@ -55,7 +75,7 @@ class FilesystemManager implements Factory {
       return _resolve('ondemand', DiskConfig.fromMap(config));
     }
 
-    throw ArgumentError('Config must be a String, DiskConfig, or Map');
+    throw ArgumentError('Config must be a Disk, String, DiskConfig, or Map');
   }
 
   /// Attempt to get the disk from the local cache.
@@ -187,10 +207,9 @@ class FilesystemManager implements Factory {
     return this;
   }
 
-  /// Dynamically call methods on the default driver instance.
+  /// Dynamically call methods on the default disk instance.
   @override
   dynamic noSuchMethod(Invocation invocation) {
-    // Forward to default disk
     return Function.apply(disk().noSuchMethod, [invocation], {});
   }
 }

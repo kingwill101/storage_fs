@@ -205,7 +205,7 @@ void main() {
         },
       );
 
-      Storage.initialize(config);
+      Storage.initializeFromMap(config);
 
       expect(Storage.getDefaultDriver(), equals('local'));
     });
@@ -220,14 +220,14 @@ void main() {
         },
       };
 
-      Storage.initialize(map);
+      Storage.initializeFromMap(map);
 
       expect(Storage.getDefaultDriver(), equals('test'));
     });
 
     test('throws on invalid config type', () {
       expect(
-        () => Storage.initialize('invalid'),
+        () => Storage.initializeFromMap('invalid'),
         throwsA(isA<ArgumentError>()),
       );
     });

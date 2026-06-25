@@ -8,36 +8,24 @@
 ///
 /// * **Multiple storage drivers**: Local filesystem, S3-compatible cloud storage
 /// * **Unified API**: Same interface for all storage backends
-/// * **Laravel-inspired**: Familiar API for PHP/Laravel developers
+/// * **Typed disk configurations**: Type-safe initialization via [Disk] subclasses
 /// * **Signed URLs**: Generate temporary URLs for cloud storage
 /// * **Configurable**: Easy configuration with multiple disk support
 ///
 /// ## Getting Started
 ///
-/// First, initialize the storage system with your configuration:
+/// First, initialize the storage system with typed disk configurations:
 ///
 /// ```dart
 /// import 'package:storage_fs/storage_fs.dart';
 ///
 /// void main() {
-///   Storage.initialize({
-///     'default': 'local',
-///     'disks': {
-///       'local': {
-///         'driver': 'local',
-///         'root': '/path/to/storage',
-///       },
-///       's3': {
-///         'driver': 's3',
-///         'options': {
-///           'endpoint': 'your-endpoint.com',
-///           'key': 'your-access-key',
-///           'secret': 'your-secret-key',
-///           'bucket': 'your-bucket',
-///         },
-///       },
-///     },
-///   });
+///   Storage.initialize(
+///     defaultDisk: 'local',
+///     disks: [
+///       LocalDisk(name: 'local', root: '/path/to/storage'),
+///     ],
+///   );
 /// }
 /// ```
 ///
@@ -117,7 +105,10 @@ export 'src/config/disk_config.dart';
 export 'src/config/storage_config.dart';
 export 'src/contracts/filesystem.dart';
 export 'src/contracts/cloud.dart';
+export 'src/contracts/disk.dart';
 export 'src/contracts/factory.dart';
 export 'src/adapters/filesystem_adapter.dart';
 export 'src/adapters/cloud_adapter.dart';
+export 'src/adapters/local_disk.dart';
+export 'src/adapters/s3_disk.dart';
 export 'src/exceptions/filesystem_exception.dart';

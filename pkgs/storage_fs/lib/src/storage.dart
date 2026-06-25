@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'contracts/cloud.dart';
+import 'contracts/disk.dart';
 import 'contracts/filesystem.dart';
 import 'filesystem_manager.dart';
 import 'adapters/filesystem_adapter.dart';
@@ -15,52 +16,57 @@ import 'package:path/path.dart' as p;
 /// static API for working with both local filesystems and cloud storage services.
 ///
 /// Before using any methods, you must initialize the storage system by calling
-/// [initialize] with your configuration.
+/// [initialize] with your typed disk configurations.
 ///
 /// ```dart
-/// Storage.initialize({
-///   'default': 'local',
-///   'disks': {
-///     'local': {
-///       'driver': 'local',
-///       'root': '/path/to/storage',
-///     },
-///   },
-/// });
+/// Storage.initialize(
+///   defaultDisk: 'local',
+///   disks: [
+///     LocalDisk(name: 'local', root: '/path/to/storage'),
+///   ],
+/// );
 /// ```
 class Storage {
   static FilesystemManager? _manager;
   static StorageConfig? _config;
 
-  /// Initializes the Storage facade with the given configuration.
-  ///
-  /// Accepts either a [StorageConfig] instance or a [Map<String, dynamic>].
-  /// This must be called before using any other Storage methods.
+  /// Initializes the Storage facade with typed disk configurations.
   ///
   /// ```dart
-  /// Storage.initialize({
+  /// Storage.initialize(
+  ///   defaultDisk: 'local',
+  ///   cloudDisk: 's3',
+  ///   disks: [
+  ///     LocalDisk(name: 'local', root: '/var/storage'),
+  ///     S3Disk(name: 's3', endpoint: 's3.amazonaws.com', bucket: 'my-bucket'),
+  ///   ],
+  /// );
+  /// ```
+  static void initialize({
+    String defaultDisk = 'local',
+    String? cloudDisk,
+    Iterable<Disk> disks = const [],
+  }) {
+    _config = StorageConfig.fromDisks(
+      defaultDisk: defaultDisk,
+      cloudDisk: cloudDisk,
+      disks: disks,
+    );
+    _manager = FilesystemManager(_config!)..addDisks(disks);
+  }
+
+  /// Initializes the Storage facade with the given configuration (legacy).
+  ///
+  /// Accepts either a [StorageConfig] instance or a [Map<String, dynamic>].
+  ///
+  /// ```dart
+  /// Storage.initializeFromMap({
   ///   'default': 'local',
-  ///   'cloud': 's3',
-  ///   'disks': {
-  ///     'local': {
-  ///       'driver': 'local',
-  ///       'root': '/var/storage',
-  ///     },
-  ///     's3': {
-  ///       'driver': 's3',
-  ///       'options': {
-  ///         'endpoint': 's3.amazonaws.com',
-  ///         'key': 'your-key',
-  ///         'secret': 'your-secret',
-  ///         'bucket': 'my-bucket',
-  ///       },
-  ///     },
-  ///   },
+  ///   'disks': { ... },
   /// });
   /// ```
-  ///
-  /// Throws [ArgumentError] if [config] is not a [StorageConfig] or [Map].
-  static void initialize(dynamic config) {
+  @Deprecated('Use Storage.initialize() with typed Disk configurations instead')
+  static void initializeFromMap(dynamic config) {
     if (config is StorageConfig) {
       _config = config;
       _manager = FilesystemManager(config);
