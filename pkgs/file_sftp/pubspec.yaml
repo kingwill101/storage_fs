@@ -1,6 +1,6 @@
 name: file_sftp
 description: SFTP/SSH filesystem adapter implementing the storage_fs Disk and package:file FileSystem interfaces.
-version: 0.2.0
+version: 0.2.1
 repository: https://github.com/kingwill101/storage_fs/tree/master/pkgs/file_sftp
 resolution: workspace
 

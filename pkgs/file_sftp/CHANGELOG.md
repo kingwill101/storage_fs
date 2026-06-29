@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.1 (2026-06-29)
+
+### Fixed
+- **`SftpFile._toSftpMode` now includes read permission** for `FileMode.write`,
+  `FileMode.writeOnly`, and `FileMode.append` modes. Previously these modes
+  opened SFTP handles without read access, making it impossible to read from a
+  `RandomAccessFile` opened for writing. This matches `dart:io`'s semantics
+  where any writable handle also supports reads.
+- Added unit tests verifying the open-mode flags include `SftpFileOpenMode.read`
+  for all writable modes.
+
 ## 0.2.0 (2026-06-29)
 
 ### Features

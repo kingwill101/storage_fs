@@ -334,6 +334,87 @@ void main() {
     });
   });
 
+  group('SftpFile - open mode flags', () {
+    test('open with FileMode.read passes only read flag', () async {
+      SftpFileOpenMode? capturedMode;
+      when(() => mockFs.open(any(), mode: any(named: 'mode')))
+          .thenAnswer((invocation) async {
+        capturedMode =
+            invocation.namedArguments[const Symbol('mode')] as SftpFileOpenMode;
+        return mockFile;
+      });
+      when(() => mockFile.close()).thenAnswer((_) async {});
+
+      await fs.file('/f.txt').open(mode: FileMode.read);
+
+      expect(capturedMode, isNotNull);
+      expect(capturedMode!.flag & SftpFileOpenMode.read.flag, isNot(0));
+      expect(capturedMode!.flag & SftpFileOpenMode.write.flag, equals(0));
+      expect(capturedMode!.flag & SftpFileOpenMode.create.flag, equals(0));
+      expect(capturedMode!.flag & SftpFileOpenMode.truncate.flag, equals(0));
+    });
+
+    test('open with FileMode.write includes read permission', () async {
+      SftpFileOpenMode? capturedMode;
+      when(() => mockFs.open(any(), mode: any(named: 'mode')))
+          .thenAnswer((invocation) async {
+        capturedMode =
+            invocation.namedArguments[const Symbol('mode')] as SftpFileOpenMode;
+        return mockFile;
+      });
+      when(() => mockFile.close()).thenAnswer((_) async {});
+
+      await fs.file('/f.txt').open(mode: FileMode.write);
+
+      expect(capturedMode, isNotNull);
+      // Should include read, write, create, and truncate
+      expect(capturedMode!.flag & SftpFileOpenMode.read.flag, isNot(0));
+      expect(capturedMode!.flag & SftpFileOpenMode.write.flag, isNot(0));
+      expect(capturedMode!.flag & SftpFileOpenMode.create.flag, isNot(0));
+      expect(capturedMode!.flag & SftpFileOpenMode.truncate.flag, isNot(0));
+    });
+
+    test('open with FileMode.writeOnly includes read permission', () async {
+      SftpFileOpenMode? capturedMode;
+      when(() => mockFs.open(any(), mode: any(named: 'mode')))
+          .thenAnswer((invocation) async {
+        capturedMode =
+            invocation.namedArguments[const Symbol('mode')] as SftpFileOpenMode;
+        return mockFile;
+      });
+      when(() => mockFile.close()).thenAnswer((_) async {});
+
+      await fs.file('/f.txt').open(mode: FileMode.writeOnly);
+
+      expect(capturedMode, isNotNull);
+      expect(capturedMode!.flag & SftpFileOpenMode.read.flag, isNot(0));
+      expect(capturedMode!.flag & SftpFileOpenMode.write.flag, isNot(0));
+      expect(capturedMode!.flag & SftpFileOpenMode.create.flag, isNot(0));
+      expect(capturedMode!.flag & SftpFileOpenMode.truncate.flag, isNot(0));
+    });
+
+    test('open with FileMode.append includes read permission', () async {
+      SftpFileOpenMode? capturedMode;
+      when(() => mockFs.open(any(), mode: any(named: 'mode')))
+          .thenAnswer((invocation) async {
+        capturedMode =
+            invocation.namedArguments[const Symbol('mode')] as SftpFileOpenMode;
+        return mockFile;
+      });
+      when(() => mockFile.close()).thenAnswer((_) async {});
+
+      await fs.file('/f.txt').open(mode: FileMode.append);
+
+      expect(capturedMode, isNotNull);
+      // Should include read, write, create, and append (no truncate)
+      expect(capturedMode!.flag & SftpFileOpenMode.read.flag, isNot(0));
+      expect(capturedMode!.flag & SftpFileOpenMode.write.flag, isNot(0));
+      expect(capturedMode!.flag & SftpFileOpenMode.create.flag, isNot(0));
+      expect(capturedMode!.flag & SftpFileOpenMode.truncate.flag, equals(0));
+      expect(capturedMode!.flag & SftpFileOpenMode.append.flag, isNot(0));
+    });
+  });
+
   group('SftpFile - readOnly guard', () {
     late SftpFileSystem roFs;
 

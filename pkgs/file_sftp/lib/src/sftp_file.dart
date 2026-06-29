@@ -375,18 +375,23 @@ class SftpFile extends SftpFileSystemEntity implements File {
   /// Converts a [FileMode] to the corresponding [SftpFileOpenMode] flags.
   ///
   /// - [FileMode.read] produces read-only access.
-  /// - [FileMode.write] and [FileMode.writeOnly] create or truncate then write.
-  /// - All other modes (including [FileMode.append]) create or append.
+  /// - [FileMode.write] and [FileMode.writeOnly] create or truncate, then
+  ///   allow both reading and writing (matching `dart:io`'s [`RandomAccessFile`]
+  ///   semantics where any writable handle also supports reads).
+  /// - All other modes (including [FileMode.append]) create or append with
+  ///   read+write access.
   static SftpFileOpenMode _toSftpMode(FileMode mode) {
     if (mode == FileMode.read) return SftpFileOpenMode.read;
     if (mode == FileMode.write || mode == FileMode.writeOnly) {
       return SftpFileOpenMode.create |
           SftpFileOpenMode.truncate |
-          SftpFileOpenMode.write;
+          SftpFileOpenMode.write |
+          SftpFileOpenMode.read;
     }
     return SftpFileOpenMode.create |
         SftpFileOpenMode.append |
-        SftpFileOpenMode.write;
+        SftpFileOpenMode.write |
+        SftpFileOpenMode.read;
   }
 
   /// Whether the filesystem is configured as read-only.
