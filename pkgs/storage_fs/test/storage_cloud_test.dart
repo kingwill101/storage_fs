@@ -21,7 +21,7 @@ void main() {
 
         // Initialize storage with env-based S3 configuration
         final env = MinioConfig.fromEnvironment();
-        Storage.initialize(env.toStorageInitConfig());
+        Storage.initializeFromMap(env.toStorageInitConfig());
       });
 
       tearDownAll(() async {
@@ -255,7 +255,7 @@ void main() {
 
   group('Local Filesystem Tests', () {
     setUp(() {
-      Storage.initialize({
+      Storage.initializeFromMap({
         'default': 'local',
         'disks': {
           'local': {

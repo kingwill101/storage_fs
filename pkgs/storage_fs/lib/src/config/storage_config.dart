@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import '../contracts/disk.dart';
 import 'disk_config.dart';
 
 /// Main configuration for the Storage system.
@@ -18,6 +19,23 @@ class StorageConfig {
     this.cloudDisk,
     required this.disks,
   });
+
+  /// Create a StorageConfig from typed [Disk] configurations.
+  factory StorageConfig.fromDisks({
+    String defaultDisk = 'local',
+    String? cloudDisk,
+    required Iterable<Disk> disks,
+  }) {
+    final diskMap = <String, DiskConfig>{};
+    for (final disk in disks) {
+      diskMap[disk.name] = disk.toDiskConfig();
+    }
+    return StorageConfig(
+      defaultDisk: defaultDisk,
+      cloudDisk: cloudDisk,
+      disks: diskMap,
+    );
+  }
 
   /// Create a StorageConfig from a map
   factory StorageConfig.fromMap(Map<String, dynamic> map) {

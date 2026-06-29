@@ -2,3 +2,5 @@
 .dart_tool
 pubspec.lock
 pkgs/storage_fs/credentials.txt
+docs/
+docs.json

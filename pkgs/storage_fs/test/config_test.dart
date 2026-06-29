@@ -195,6 +195,33 @@ void main() {
 
       expect(config.getDisk('local'), same(diskConfig));
     });
+
+    test('fromDisks preserves driver type and backend options', () {
+      final config = StorageConfig.fromDisks(
+        defaultDisk: 'local',
+        cloudDisk: 'cloud',
+        disks: [
+          LocalDisk(name: 'local', root: '/tmp'),
+          S3Disk(
+            name: 'cloud',
+            endpoint: 'https://minio.example.com:9000',
+            bucket: 'my-bucket',
+            accessKey: 'key',
+            secretKey: 'secret',
+            region: 'us-east-1',
+          ),
+        ],
+      );
+
+      expect(config.getDisk('local')?.driver, equals('local'));
+      expect(config.getDisk('local')?.root, equals('/tmp'));
+      expect(config.getDisk('cloud')?.driver, equals('s3'));
+      expect(
+        config.getDisk('cloud')?.s3Endpoint,
+        equals('https://minio.example.com:9000'),
+      );
+      expect(config.getDisk('cloud')?.s3Bucket, equals('my-bucket'));
+    });
   });
 
   group('Storage Integration with Config Classes', () {
@@ -205,7 +232,7 @@ void main() {
         },
       );
 
-      Storage.initialize(config);
+      Storage.initializeFromMap(config);
 
       expect(Storage.getDefaultDriver(), equals('local'));
     });
@@ -220,14 +247,14 @@ void main() {
         },
       };
 
-      Storage.initialize(map);
+      Storage.initializeFromMap(map);
 
       expect(Storage.getDefaultDriver(), equals('test'));
     });
 
     test('throws on invalid config type', () {
       expect(
-        () => Storage.initialize('invalid'),
+        () => Storage.initializeFromMap('invalid'),
         throwsA(isA<ArgumentError>()),
       );
     });

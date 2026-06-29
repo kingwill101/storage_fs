@@ -1,3 +1,23 @@
+# Changelog
+
+## 0.2.0 (2026-06-25)
+
+### Features
+- **Typed Disk Configuration**: New `Disk` abstract class with `LocalDisk` and `S3Disk` implementations for type-safe storage setup
+- **Typed Storage Initialization**: `Storage.initialize({defaultDisk, cloudDisk, disks})` accepts typed `Disk` configurations instead of raw maps
+- **Dynamic Disk Registration**: `FilesystemManager.addDisks()` and `FilesystemManager.addDisk()` for runtime disk configuration
+- **FilesystemManager.build() Enhancement**: Now accepts `Disk` instances directly
+
+### API Changes (Breaking)
+- `Storage.initialize()` now uses named parameters with typed `Disk` configurations instead of a positional map argument
+- Old map-based initialization is available as `Storage.initializeFromMap()` (deprecated)
+
+### Deprecations
+- `Storage.initializeFromMap()` — use `Storage.initialize()` with typed `Disk` objects instead
+
+### Dependencies
+- Added `file_sftp` as a workspace peer dependency for the new SFTP disk type
+
 ## 0.1.0 (2025-10-16)
 
 ### Features

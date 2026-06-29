@@ -1,0 +1,33 @@
+name: file_sftp
+description: SFTP/SSH filesystem adapter implementing the storage_fs Disk interface.
+version: 0.1.1
+repository: https://github.com/kingwill101/storage_fs/tree/master/pkgs/file_sftp
+resolution: workspace
+
+topics:
+  - filesystem
+  - storage
+  - sftp
+  - ssh
+
+homepage: https://github.com/kingwill101/storage_fs/tree/master/pkgs/file_sftp
+
+issue_tracker: https://github.com/kingwill101/storage_fs/issues
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+
+dependencies:
+  storage_fs: ^0.2.0
+  dartssh2: ^2.18.0
+  path: ^1.9.1
+  convert: ^3.1.2
+  crypto: ^3.0.6
+  mime: ^2.0.0
+  meta: ^1.17.0
+dev_dependencies:
+  lints: ^6.0.0
+  mocktail: ^1.0.4
+  test: ^1.26.3
+  testcontainers_core: ^1.0.0
+  testcontainers_compose: ^1.0.0
