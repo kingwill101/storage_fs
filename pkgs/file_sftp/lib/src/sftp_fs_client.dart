@@ -45,6 +45,13 @@ class SftpFsClient implements SftpFs {
       _client.rename(oldPath, newPath);
 
   @override
+  Future<String> readlink(String path) => _client.readlink(path);
+
+  @override
+  Future<void> link(String linkPath, String targetPath) =>
+      _client.link(linkPath, targetPath);
+
+  @override
   void close() => _client.close();
 }
 

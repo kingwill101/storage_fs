@@ -15,6 +15,8 @@ abstract class SftpFs {
   Future<void> mkdir(String path, [SftpFileAttrs? attrs]);
   Future<void> rmdir(String path);
   Future<void> rename(String oldPath, String newPath);
+  Future<String> readlink(String path);
+  Future<void> link(String linkPath, String targetPath);
   void close();
 }
 
