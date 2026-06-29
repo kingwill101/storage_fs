@@ -337,8 +337,9 @@ void main() {
   group('SftpFile - open mode flags', () {
     test('open with FileMode.read passes only read flag', () async {
       SftpFileOpenMode? capturedMode;
-      when(() => mockFs.open(any(), mode: any(named: 'mode')))
-          .thenAnswer((invocation) async {
+      when(() => mockFs.open(any(), mode: any(named: 'mode'))).thenAnswer((
+        invocation,
+      ) async {
         capturedMode =
             invocation.namedArguments[const Symbol('mode')] as SftpFileOpenMode;
         return mockFile;
@@ -356,8 +357,9 @@ void main() {
 
     test('open with FileMode.write includes read permission', () async {
       SftpFileOpenMode? capturedMode;
-      when(() => mockFs.open(any(), mode: any(named: 'mode')))
-          .thenAnswer((invocation) async {
+      when(() => mockFs.open(any(), mode: any(named: 'mode'))).thenAnswer((
+        invocation,
+      ) async {
         capturedMode =
             invocation.namedArguments[const Symbol('mode')] as SftpFileOpenMode;
         return mockFile;
@@ -376,8 +378,9 @@ void main() {
 
     test('open with FileMode.writeOnly includes read permission', () async {
       SftpFileOpenMode? capturedMode;
-      when(() => mockFs.open(any(), mode: any(named: 'mode')))
-          .thenAnswer((invocation) async {
+      when(() => mockFs.open(any(), mode: any(named: 'mode'))).thenAnswer((
+        invocation,
+      ) async {
         capturedMode =
             invocation.namedArguments[const Symbol('mode')] as SftpFileOpenMode;
         return mockFile;
@@ -395,8 +398,9 @@ void main() {
 
     test('open with FileMode.append includes read permission', () async {
       SftpFileOpenMode? capturedMode;
-      when(() => mockFs.open(any(), mode: any(named: 'mode')))
-          .thenAnswer((invocation) async {
+      when(() => mockFs.open(any(), mode: any(named: 'mode'))).thenAnswer((
+        invocation,
+      ) async {
         capturedMode =
             invocation.namedArguments[const Symbol('mode')] as SftpFileOpenMode;
         return mockFile;
