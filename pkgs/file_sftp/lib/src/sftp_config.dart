@@ -1,4 +1,12 @@
 /// Connection configuration for SFTP/SSH access.
+///
+/// Specifies the remote host, authentication credentials (password or private
+/// key), and optional settings such as the remote root path, read-only mode,
+/// and connection timeouts.
+///
+/// Supports two authentication modes:
+/// - Password-based (set [password])
+/// - Public-key (set [privateKeyPems], optionally with [privateKeyPassphrase])
 class SftpConfig {
   /// The remote SSH host.
   final String host;
