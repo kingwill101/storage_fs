@@ -2,8 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:dartssh2/dartssh2.dart'
-    show SftpFileOpenMode, SftpFileAttrs;
+import 'package:dartssh2/dartssh2.dart' show SftpFileOpenMode, SftpFileAttrs;
 import 'package:file/file.dart';
 
 import 'sftp_file_system_entity.dart';
@@ -43,8 +42,7 @@ class SftpFile extends SftpFileSystemEntity implements File {
   const SftpFile(super.fileSystem, super.path);
 
   @override
-  SftpFile get absolute =>
-      SftpFile(fileSystem, fileSystem.path.absolute(path));
+  SftpFile get absolute => SftpFile(fileSystem, fileSystem.path.absolute(path));
 
   @override
   FileSystemEntityType get expectedType => FileSystemEntityType.file;
@@ -99,7 +97,9 @@ class SftpFile extends SftpFileSystemEntity implements File {
     final destFile = await fs.open(
       destination,
       mode:
-          SftpFileOpenMode.create | SftpFileOpenMode.truncate | SftpFileOpenMode.write,
+          SftpFileOpenMode.create |
+          SftpFileOpenMode.truncate |
+          SftpFileOpenMode.write,
     );
     await destFile.writeBytes(bytes);
     await destFile.close();
@@ -182,9 +182,7 @@ class SftpFile extends SftpFileSystemEntity implements File {
     final fs = await fileSystem.ensureConnected();
     await fs.setStat(
       remotePath,
-      SftpFileAttrs(
-        modifyTime: time.millisecondsSinceEpoch ~/ 1000,
-      ),
+      SftpFileAttrs(modifyTime: time.millisecondsSinceEpoch ~/ 1000),
     );
     return this;
   }
@@ -201,9 +199,7 @@ class SftpFile extends SftpFileSystemEntity implements File {
     final fs = await fileSystem.ensureConnected();
     await fs.setStat(
       remotePath,
-      SftpFileAttrs(
-        accessTime: time.millisecondsSinceEpoch ~/ 1000,
-      ),
+      SftpFileAttrs(accessTime: time.millisecondsSinceEpoch ~/ 1000),
     );
     return this;
   }
@@ -237,10 +233,10 @@ class SftpFile extends SftpFileSystemEntity implements File {
       const chunkSize = 65536;
       var pos = offset;
       while (true) {
-        final remaining =
-            length != null ? length - (pos - offset) : chunkSize;
-        final readLen =
-            remaining < chunkSize && remaining > 0 ? remaining : chunkSize;
+        final remaining = length != null ? length - (pos - offset) : chunkSize;
+        final readLen = remaining < chunkSize && remaining > 0
+            ? remaining
+            : chunkSize;
         final chunk = await file.readBytes(length: readLen, offset: pos);
         if (chunk.isEmpty) break;
         yield chunk.toList();
@@ -253,10 +249,7 @@ class SftpFile extends SftpFileSystemEntity implements File {
   }
 
   @override
-  IOSink openWrite({
-    FileMode mode = FileMode.write,
-    Encoding encoding = utf8,
-  }) {
+  IOSink openWrite({FileMode mode = FileMode.write, Encoding encoding = utf8}) {
     final controller = StreamController<List<int>>();
     final sink = IOSink(controller.sink, encoding: encoding);
 
@@ -270,11 +263,11 @@ class SftpFile extends SftpFileSystemEntity implements File {
           final fs = await fileSystem.ensureConnected();
           final sftpMode = isAppend
               ? SftpFileOpenMode.create |
-                  SftpFileOpenMode.append |
-                  SftpFileOpenMode.write
+                    SftpFileOpenMode.append |
+                    SftpFileOpenMode.write
               : SftpFileOpenMode.create |
-                  SftpFileOpenMode.truncate |
-                  SftpFileOpenMode.write;
+                    SftpFileOpenMode.truncate |
+                    SftpFileOpenMode.write;
 
           final file = await fs.open(remotePath, mode: sftpMode);
           await file.writeBytes(Uint8List.fromList(bytes));
@@ -337,11 +330,11 @@ class SftpFile extends SftpFileSystemEntity implements File {
     final fs = await fileSystem.ensureConnected();
     final sftpMode = mode == FileMode.append
         ? SftpFileOpenMode.create |
-            SftpFileOpenMode.append |
-            SftpFileOpenMode.write
+              SftpFileOpenMode.append |
+              SftpFileOpenMode.write
         : SftpFileOpenMode.create |
-            SftpFileOpenMode.truncate |
-            SftpFileOpenMode.write;
+              SftpFileOpenMode.truncate |
+              SftpFileOpenMode.write;
 
     final file = await fs.open(remotePath, mode: sftpMode);
     await file.writeBytes(Uint8List.fromList(bytes));

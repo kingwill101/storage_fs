@@ -63,9 +63,7 @@ void main() {
     });
 
     test('stat returns FileStat from remote attrs', () async {
-      when(
-        () => mockFs.stat('/foo.txt'),
-      ).thenAnswer(
+      when(() => mockFs.stat('/foo.txt')).thenAnswer(
         (_) async => SftpFileAttrs(
           size: 42,
           modifyTime: 1000,
@@ -80,21 +78,16 @@ void main() {
     });
 
     test('stat returns FileStat for directory', () async {
-      when(() => mockFs.stat('/dir')).thenAnswer(
-        (_) async => SftpFileAttrs(
-          mode: SftpFileMode.value(16877),
-        ),
-      );
+      when(
+        () => mockFs.stat('/dir'),
+      ).thenAnswer((_) async => SftpFileAttrs(mode: SftpFileMode.value(16877)));
 
       final stat = await fs.stat('/dir');
       expect(stat.type, equals(FileSystemEntityType.directory));
     });
 
     test('systemTempDirectory throws', () {
-      expect(
-        () => fs.systemTempDirectory,
-        throwsA(isA<UnsupportedError>()),
-      );
+      expect(() => fs.systemTempDirectory, throwsA(isA<UnsupportedError>()));
     });
 
     test('identical returns true when remote paths match', () async {
@@ -106,25 +99,25 @@ void main() {
     });
 
     test('isFile delegates to stat', () async {
-      when(() => mockFs.stat('/f.txt')).thenAnswer(
-        (_) async => SftpFileAttrs(mode: SftpFileMode.value(33188)),
-      );
+      when(
+        () => mockFs.stat('/f.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs(mode: SftpFileMode.value(33188)));
       expect(await fs.isFile('/f.txt'), isTrue);
     });
 
     test('isDirectory delegates to stat', () async {
-      when(() => mockFs.stat('/d')).thenAnswer(
-        (_) async => SftpFileAttrs(mode: SftpFileMode.value(16877)),
-      );
+      when(
+        () => mockFs.stat('/d'),
+      ).thenAnswer((_) async => SftpFileAttrs(mode: SftpFileMode.value(16877)));
       expect(await fs.isDirectory('/d'), isTrue);
     });
   });
 
   group('SftpFile', () {
     test('exists returns true when stat matches file type', () async {
-      when(() => mockFs.stat('/f.txt')).thenAnswer(
-        (_) async => SftpFileAttrs(mode: SftpFileMode.value(33188)),
-      );
+      when(
+        () => mockFs.stat('/f.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs(mode: SftpFileMode.value(33188)));
       expect(await fs.file('/f.txt').exists(), isTrue);
     });
 
@@ -134,16 +127,16 @@ void main() {
     });
 
     test('exists returns false when type does not match', () async {
-      when(() => mockFs.stat('/f.txt')).thenAnswer(
-        (_) async => SftpFileAttrs(mode: SftpFileMode.value(16877)),
-      );
+      when(
+        () => mockFs.stat('/f.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs(mode: SftpFileMode.value(16877)));
       expect(await fs.file('/f.txt').exists(), isFalse);
     });
 
     test('length returns file size from stat', () async {
-      when(() => mockFs.stat('/f.txt')).thenAnswer(
-        (_) async => SftpFileAttrs(size: 123),
-      );
+      when(
+        () => mockFs.stat('/f.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs(size: 123));
       expect(await fs.file('/f.txt').length(), equals(123));
     });
 
@@ -249,15 +242,13 @@ void main() {
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       await fs.file('/f.txt').create();
-      verify(
-        () => mockFs.open('/f.txt', mode: any(named: 'mode')),
-      ).called(1);
+      verify(() => mockFs.open('/f.txt', mode: any(named: 'mode'))).called(1);
     });
 
     test('create with exclusive throws when file exists', () async {
-      when(() => mockFs.stat('/f.txt')).thenAnswer(
-        (_) async => SftpFileAttrs(mode: SftpFileMode.value(33188)),
-      );
+      when(
+        () => mockFs.stat('/f.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs(mode: SftpFileMode.value(33188)));
 
       await expectLater(
         fs.file('/f.txt').create(exclusive: true),
@@ -266,9 +257,9 @@ void main() {
     });
 
     test('lastModified returns DateTime from stat', () async {
-      when(() => mockFs.stat('/f.txt')).thenAnswer(
-        (_) async => SftpFileAttrs(modifyTime: 1000000),
-      );
+      when(
+        () => mockFs.stat('/f.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs(modifyTime: 1000000));
       final dt = await fs.file('/f.txt').lastModified();
       expect(dt.millisecondsSinceEpoch, equals(1000000000));
     });
@@ -282,8 +273,9 @@ void main() {
     });
 
     test('open returns RandomAccessFile', () async {
-      when(() => mockFs.open('/f.txt', mode: any(named: 'mode')))
-          .thenAnswer((_) async => mockFile);
+      when(
+        () => mockFs.open('/f.txt', mode: any(named: 'mode')),
+      ).thenAnswer((_) async => mockFile);
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       final raf = await fs.file('/f.txt').open();
@@ -309,7 +301,10 @@ void main() {
       when(() => mockFs.open('/f.txt')).thenAnswer((_) async => mockFile);
       when(() => mockFile.close()).thenAnswer((_) async {});
       when(
-        () => mockFile.readBytes(length: any(named: 'length'), offset: any(named: 'offset')),
+        () => mockFile.readBytes(
+          length: any(named: 'length'),
+          offset: any(named: 'offset'),
+        ),
       ).thenAnswer((_) async {
         readCallCount++;
         if (readCallCount == 1) {
@@ -345,12 +340,8 @@ void main() {
     setUp(() {
       roFs = SftpFileSystem.fromSftpFs(
         mockFs,
-        config: () => const SftpConfig(
-          host: '',
-          username: '',
-          root: '/',
-          readOnly: true,
-        ),
+        config: () =>
+            const SftpConfig(host: '', username: '', root: '/', readOnly: true),
       );
     });
 
@@ -373,9 +364,9 @@ void main() {
 
   group('SftpDirectory', () {
     test('exists returns true when stat returns directory type', () async {
-      when(() => mockFs.stat('/dir')).thenAnswer(
-        (_) async => SftpFileAttrs(mode: SftpFileMode.value(16877)),
-      );
+      when(
+        () => mockFs.stat('/dir'),
+      ).thenAnswer((_) async => SftpFileAttrs(mode: SftpFileMode.value(16877)));
       expect(await fs.directory('/dir').exists(), isTrue);
     });
 
@@ -387,9 +378,9 @@ void main() {
 
     test('create with recursive creates parent directories', () async {
       when(() => mockFs.stat('/a')).thenThrow(Exception('not found'));
-      when(() => mockFs.stat('/')).thenAnswer(
-        (_) async => SftpFileAttrs(mode: SftpFileMode.value(16877)),
-      );
+      when(
+        () => mockFs.stat('/'),
+      ).thenAnswer((_) async => SftpFileAttrs(mode: SftpFileMode.value(16877)));
       when(() => mockFs.mkdir('/a')).thenAnswer((_) async {});
       when(() => mockFs.mkdir('/a/b')).thenAnswer((_) async {});
 
@@ -505,9 +496,7 @@ void main() {
     test('update removes old link and creates new one', () async {
       when(
         () => mockFs.stat('/link', followLink: false),
-      ).thenAnswer(
-        (_) async => SftpFileAttrs(mode: SftpFileMode.value(41453)),
-      );
+      ).thenAnswer((_) async => SftpFileAttrs(mode: SftpFileMode.value(41453)));
       when(() => mockFs.remove('/link')).thenAnswer((_) async {});
       when(() => mockFs.link('/link', '/new-target')).thenAnswer((_) async {});
 
@@ -524,9 +513,9 @@ void main() {
     });
 
     test('rename renames the link', () async {
-      when(() => mockFs.rename('/old-link', '/new-link')).thenAnswer(
-        (_) async {},
-      );
+      when(
+        () => mockFs.rename('/old-link', '/new-link'),
+      ).thenAnswer((_) async {});
 
       await fs.link('/old-link').rename('/new-link');
       verify(() => mockFs.rename('/old-link', '/new-link')).called(1);
@@ -535,28 +524,26 @@ void main() {
     test('exists returns true when stat shows symbolic link', () async {
       when(
         () => mockFs.stat('/link', followLink: false),
-      ).thenAnswer(
-        (_) async => SftpFileAttrs(mode: SftpFileMode.value(41453)),
-      );
+      ).thenAnswer((_) async => SftpFileAttrs(mode: SftpFileMode.value(41453)));
       expect(await fs.link('/link').exists(), isTrue);
     });
 
     test('exists returns false when stat throws', () async {
-      when(() => mockFs.stat('/link', followLink: false)).thenThrow(
-        Exception('fail'),
-      );
+      when(
+        () => mockFs.stat('/link', followLink: false),
+      ).thenThrow(Exception('fail'));
       expect(await fs.link('/link').exists(), isFalse);
     });
   });
 
   group('SftpRandomAccessFile', () {
     test('read returns bytes and advances position', () async {
-      when(() => mockFile.readBytes(length: 5, offset: 0)).thenAnswer(
-        (_) async => Uint8List.fromList([1, 2, 3, 4, 5]),
-      );
-      when(() => mockFile.readBytes(length: 5, offset: 5)).thenAnswer(
-        (_) async => Uint8List.fromList([6, 7, 8, 9, 10]),
-      );
+      when(
+        () => mockFile.readBytes(length: 5, offset: 0),
+      ).thenAnswer((_) async => Uint8List.fromList([1, 2, 3, 4, 5]));
+      when(
+        () => mockFile.readBytes(length: 5, offset: 5),
+      ).thenAnswer((_) async => Uint8List.fromList([6, 7, 8, 9, 10]));
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       final raf = SftpRandomAccessFile(mockFile, '/f.txt', fs: mockFs);
@@ -584,23 +571,24 @@ void main() {
     });
 
     test('writeByte writes at current position', () async {
-      when(() => mockFile.writeBytes(any(), offset: 0)).thenAnswer(
-        (_) async {},
-      );
+      when(
+        () => mockFile.writeBytes(any(), offset: 0),
+      ).thenAnswer((_) async {});
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       final raf = SftpRandomAccessFile(mockFile, '/f.txt');
       await raf.writeByte(65);
-      verify(() => mockFile.writeBytes(Uint8List.fromList([65]), offset: 0))
-          .called(1);
+      verify(
+        () => mockFile.writeBytes(Uint8List.fromList([65]), offset: 0),
+      ).called(1);
 
       await raf.close();
     });
 
     test('writeFrom writes buffer at current position', () async {
-      when(() => mockFile.writeBytes(any(), offset: 0)).thenAnswer(
-        (_) async {},
-      );
+      when(
+        () => mockFile.writeBytes(any(), offset: 0),
+      ).thenAnswer((_) async {});
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       final raf = SftpRandomAccessFile(mockFile, '/f.txt');
@@ -613,9 +601,9 @@ void main() {
     });
 
     test('readByte reads single byte', () async {
-      when(() => mockFile.readBytes(length: 1, offset: 0)).thenAnswer(
-        (_) async => Uint8List.fromList([42]),
-      );
+      when(
+        () => mockFile.readBytes(length: 1, offset: 0),
+      ).thenAnswer((_) async => Uint8List.fromList([42]));
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       final raf = SftpRandomAccessFile(mockFile, '/f.txt');
@@ -626,9 +614,9 @@ void main() {
     });
 
     test('readByte returns -1 at EOF', () async {
-      when(() => mockFile.readBytes(length: 1, offset: 0)).thenAnswer(
-        (_) async => Uint8List(0),
-      );
+      when(
+        () => mockFile.readBytes(length: 1, offset: 0),
+      ).thenAnswer((_) async => Uint8List(0));
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       final raf = SftpRandomAccessFile(mockFile, '/f.txt');
@@ -651,16 +639,13 @@ void main() {
       final raf = SftpRandomAccessFile(mockFile, '/f.txt');
       await raf.close();
 
-      expect(
-        () => raf.read(1),
-        throwsA(isA<FileSystemException>()),
-      );
+      expect(() => raf.read(1), throwsA(isA<FileSystemException>()));
     });
 
     test('length returns size from stat', () async {
-      when(() => mockFs.stat('/f.txt')).thenAnswer(
-        (_) async => SftpFileAttrs(size: 100),
-      );
+      when(
+        () => mockFs.stat('/f.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs(size: 100));
       when(() => mockFile.close()).thenAnswer((_) async {});
 
       final raf = SftpRandomAccessFile(mockFile, '/f.txt', fs: mockFs);
@@ -671,10 +656,7 @@ void main() {
 
     test('lock throws UnsupportedError', () {
       final raf = SftpRandomAccessFile(mockFile, '/f.txt');
-      expect(
-        () => raf.lock(),
-        throwsA(isA<UnsupportedError>()),
-      );
+      expect(() => raf.lock(), throwsA(isA<UnsupportedError>()));
     });
   });
 
@@ -684,21 +666,20 @@ void main() {
     setUp(() {
       prefixedFs = SftpFileSystem.fromSftpFs(
         mockFs,
-        config: () => const SftpConfig(
-          host: '',
-          username: '',
-          root: '/data',
-        ),
+        config: () => const SftpConfig(host: '', username: '', root: '/data'),
       );
     });
 
-    test('file paths are translated to remote paths with root prefix', () async {
-      when(() => mockFs.stat('/data/foo.txt')).thenAnswer(
-        (_) async => SftpFileAttrs(mode: SftpFileMode.value(33188)),
-      );
-      expect(await prefixedFs.file('/foo.txt').exists(), isTrue);
-      verify(() => mockFs.stat('/data/foo.txt')).called(1);
-    });
+    test(
+      'file paths are translated to remote paths with root prefix',
+      () async {
+        when(() => mockFs.stat('/data/foo.txt')).thenAnswer(
+          (_) async => SftpFileAttrs(mode: SftpFileMode.value(33188)),
+        );
+        expect(await prefixedFs.file('/foo.txt').exists(), isTrue);
+        verify(() => mockFs.stat('/data/foo.txt')).called(1);
+      },
+    );
 
     test('toRemotePath handles root prefix', () {
       expect(prefixedFs.toRemotePath('/foo.txt'), equals('/data/foo.txt'));
@@ -741,18 +722,15 @@ void main() {
     });
 
     test('stat delegates to filesystem stat', () async {
-      when(() => mockFs.stat('/f.txt')).thenAnswer(
-        (_) async => SftpFileAttrs(size: 42),
-      );
+      when(
+        () => mockFs.stat('/f.txt'),
+      ).thenAnswer((_) async => SftpFileAttrs(size: 42));
       final fileStat = await fs.file('/f.txt').stat();
       expect(fileStat.size, equals(42));
     });
 
     test('watch throws UnsupportedError', () {
-      expect(
-        () => fs.file('/f.txt').watch(),
-        throwsA(isA<UnsupportedError>()),
-      );
+      expect(() => fs.file('/f.txt').watch(), throwsA(isA<UnsupportedError>()));
     });
   });
 
@@ -766,12 +744,8 @@ void main() {
     test('readOnly config prevents writes', () async {
       final roFs = SftpFileSystem.fromSftpFs(
         mockFs,
-        config: () => const SftpConfig(
-          host: '',
-          username: '',
-          root: '/',
-          readOnly: true,
-        ),
+        config: () =>
+            const SftpConfig(host: '', username: '', root: '/', readOnly: true),
       );
 
       await expectLater(
@@ -795,19 +769,21 @@ void main() {
   });
 
   group('default constructor with optional client', () {
-    test('accepts a pre-configured SftpClient and is immediately connected',
-        () async {
-      final mockSftpClient = _MockSftpClient();
-      final configuredFs = SftpFileSystem(
-        const SftpConfig(host: '', username: ''),
-        client: mockSftpClient,
-      );
+    test(
+      'accepts a pre-configured SftpClient and is immediately connected',
+      () async {
+        final mockSftpClient = _MockSftpClient();
+        final configuredFs = SftpFileSystem(
+          const SftpConfig(host: '', username: ''),
+          client: mockSftpClient,
+        );
 
-      // The filesystem should be connected immediately (no lazy init needed).
-      // Verify by calling ensureConnected — it should not throw.
-      final fs = await configuredFs.ensureConnected();
-      expect(fs, isNotNull);
-    });
+        // The filesystem should be connected immediately (no lazy init needed).
+        // Verify by calling ensureConnected — it should not throw.
+        final fs = await configuredFs.ensureConnected();
+        expect(fs, isNotNull);
+      },
+    );
   });
 
   group('default constructor with optional sshClient', () {

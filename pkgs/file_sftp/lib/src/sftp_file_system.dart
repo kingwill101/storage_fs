@@ -66,11 +66,8 @@ class SftpFileSystem implements FileSystem {
   /// is used immediately and [disconnect] closes it. When an [SSHClient] is
   /// supplied, the SFTP session is derived from it lazily on the first file
   /// operation. Use [disconnect] to close the SSH and SFTP sessions.
-  SftpFileSystem(
-    this.config, {
-    SftpClient? client,
-    SSHClient? sshClient,
-  }) : path = p.Context(style: p.Style.posix) {
+  SftpFileSystem(this.config, {SftpClient? client, SSHClient? sshClient})
+    : path = p.Context(style: p.Style.posix) {
     if (client != null) {
       _fs = SftpFsClient(client);
       _connected = true;
@@ -96,13 +93,11 @@ class SftpFileSystem implements FileSystem {
   /// The caller retains ownership of the [SftpClient]; calling [disconnect]
   /// on this filesystem closes it. The optional [config] factory supplies the
   /// [SftpConfig]; defaults to an empty config.
-  SftpFileSystem.fromClient(
-    SftpClient sftp, {
-    SftpConfig Function()? config,
-  }) : _fs = SftpFsClient(sftp),
-       _connected = true,
-       config = config?.call() ?? const SftpConfig(host: '', username: ''),
-       path = p.Context(style: p.Style.posix);
+  SftpFileSystem.fromClient(SftpClient sftp, {SftpConfig Function()? config})
+    : _fs = SftpFsClient(sftp),
+      _connected = true,
+      config = config?.call() ?? const SftpConfig(host: '', username: ''),
+      path = p.Context(style: p.Style.posix);
 
   /// The configuration used to connect to the remote SFTP server.
   ///
@@ -324,13 +319,13 @@ class SftpFileSystem implements FileSystem {
     _sshClient = SSHClient(
       socket,
       username: config.username,
-      onPasswordRequest:
-          config.password != null ? () => config.password! : null,
+      onPasswordRequest: config.password != null
+          ? () => config.password!
+          : null,
       identities:
           config.privateKeyPems
               ?.expand(
-                (pem) =>
-                    SSHKeyPair.fromPem(pem, config.privateKeyPassphrase),
+                (pem) => SSHKeyPair.fromPem(pem, config.privateKeyPassphrase),
               )
               .toList() ??
           const [],

@@ -28,8 +28,7 @@ class SftpLink extends SftpFileSystemEntity implements Link {
   const SftpLink(super.fileSystem, super.path);
 
   @override
-  SftpLink get absolute =>
-      SftpLink(fileSystem, fileSystem.path.absolute(path));
+  SftpLink get absolute => SftpLink(fileSystem, fileSystem.path.absolute(path));
 
   @override
   FileSystemEntityType get expectedType => FileSystemEntityType.link;

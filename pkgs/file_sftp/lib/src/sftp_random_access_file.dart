@@ -90,9 +90,7 @@ class SftpRandomAccessFile implements RandomAccessFile {
       final attrs = await fs.stat(_remotePath);
       return attrs.size ?? 0;
     }
-    throw UnsupportedError(
-      'Cannot determine length without access to SftpFs.',
-    );
+    throw UnsupportedError('Cannot determine length without access to SftpFs.');
   }
 
   @override
@@ -212,7 +210,11 @@ class SftpRandomAccessFile implements RandomAccessFile {
   }
 
   @override
-  void lockSync([FileLock mode = FileLock.shared, int start = 0, int end = -1]) {
+  void lockSync([
+    FileLock mode = FileLock.shared,
+    int start = 0,
+    int end = -1,
+  ]) {
     throw UnsupportedError('File locking not supported');
   }
 
@@ -240,7 +242,11 @@ class SftpRandomAccessFile implements RandomAccessFile {
   }
 
   @override
-  Future<RandomAccessFile> writeFrom(List<int> buffer, [int start = 0, int? end]) async {
+  Future<RandomAccessFile> writeFrom(
+    List<int> buffer, [
+    int start = 0,
+    int? end,
+  ]) async {
     _checkNotClosed();
     end ??= buffer.length;
     final data = Uint8List.fromList(buffer.sublist(start, end));
@@ -255,7 +261,10 @@ class SftpRandomAccessFile implements RandomAccessFile {
   }
 
   @override
-  Future<RandomAccessFile> writeString(String string, {Encoding encoding = utf8}) async {
+  Future<RandomAccessFile> writeString(
+    String string, {
+    Encoding encoding = utf8,
+  }) async {
     final bytes = encoding.encode(string);
     return writeFrom(bytes);
   }

@@ -52,10 +52,7 @@ Future<void> main() async {
         );
         await sshClient.authenticated;
         final sftp = await sshClient.sftp();
-        fs = SftpFileSystem.fromClient(
-          sftp,
-          config: () => sftpConfig(),
-        );
+        fs = SftpFileSystem.fromClient(sftp, config: () => sftpConfig());
       });
 
       tearDown(() async {
@@ -199,10 +196,7 @@ Future<void> main() async {
         await src.childFile('f.txt').writeAsString('content');
         final dst = await src.rename('/rename-dir-dst');
         expect(await dst.exists(), isTrue);
-        expect(
-          await dst.childFile('f.txt').readAsString(),
-          equals('content'),
-        );
+        expect(await dst.childFile('f.txt').readAsString(), equals('content'));
         expect(await src.exists(), isFalse);
       });
 
@@ -374,7 +368,8 @@ Future<void> main() async {
         await file.writeAsString('test');
         final newTime = DateTime(2020, 1, 1);
         try {
-          await file.setLastModified(newTime)
+          await file
+              .setLastModified(newTime)
               .timeout(const Duration(seconds: 10));
           final modified = await file.lastModified();
           expect(modified.year, equals(2020));
@@ -424,10 +419,7 @@ Future<void> main() async {
         );
         await sshClient.authenticated;
         final sftp = await sshClient.sftp();
-        fs = SftpFileSystem(
-          sftpConfig(),
-          client: sftp,
-        );
+        fs = SftpFileSystem(sftpConfig(), client: sftp);
       });
 
       tearDown(() async {
@@ -441,7 +433,10 @@ Future<void> main() async {
       test('write and read a file', () async {
         final file = fs.file('/write-read-default-test.txt');
         await file.writeAsString('Hello with optional client!');
-        expect(await file.readAsString(), equals('Hello with optional client!'));
+        expect(
+          await file.readAsString(),
+          equals('Hello with optional client!'),
+        );
       });
 
       test('writeAsBytes and readAsBytes round trip', () async {
@@ -492,10 +487,7 @@ Future<void> main() async {
           onPasswordRequest: () => 'testpass',
         );
         await sshClient.authenticated;
-        fs = SftpFileSystem(
-          sftpConfig(),
-          sshClient: sshClient,
-        );
+        fs = SftpFileSystem(sftpConfig(), sshClient: sshClient);
       });
 
       tearDown(() async {
